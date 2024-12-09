@@ -1,0 +1,26 @@
+﻿version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_MTS
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: soa_db
+      MYSQL_USER: soa_user
+      MYSQL_PASSWORD: soa_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - soa-net
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  soa-net:
+    driver: bridge
