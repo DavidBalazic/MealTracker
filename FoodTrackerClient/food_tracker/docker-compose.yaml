@@ -1,0 +1,38 @@
+# 2 profiles: dev and prod
+# use --profile dev or --profile prod to specify (eg. docker compose --profile dev up --watch)
+services:
+  react-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000" 
+    volumes:
+      - ./:/app # sync code changes
+      - /app/node_modules # preserve node_modules inside container
+    stdin_open: true
+    tty: true
+    environment:
+      - NODE_ENV=development
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src/
+          ignore:
+            - node_modules/
+    profiles:
+      - dev
+
+  react-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    profiles:
+      - prod
