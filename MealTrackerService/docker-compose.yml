@@ -1,24 +1,19 @@
-﻿version: "3.8"
-
-services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql_MTS
+﻿services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_SOA_MTS
+    command: mongod --port 27018
     restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: soa_db
-      MYSQL_USER: soa_user
-      MYSQL_PASSWORD: soa_password
     ports:
-      - "3306:3306"
+      - "27018:27018"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: miha_plemenitas
+      MONGO_INITDB_ROOT_PASSWORD: miha_password
     volumes:
-      - mysql-data:/var/lib/mysql
-    networks:
-      - soa-net
+      - mongo-data:/data/db
 
 volumes:
-  mysql-data:
+  mongo-data:
     driver: local
 
 networks:
