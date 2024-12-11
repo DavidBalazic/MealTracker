@@ -43,7 +43,6 @@ namespace MealTrackerService.Controllers
         [HttpDelete("mealplan/{id}")]
         public async Task<ActionResult> DeleteMealPlan(string id)
         {
-            // Assuming IDs are strings in the database
             var result = await _context.MealPlans.DeleteOneAsync(mp => mp.Id == id);
             if (result.DeletedCount == 0) return NotFound("Meal plan not found.");
             return Ok();
@@ -53,33 +52,43 @@ namespace MealTrackerService.Controllers
         [HttpGet("meals/{id}")]
         public async Task<ActionResult<Meal>> GetMeal(string id)
         {
-            // Assuming IDs are strings
             var meal = await _context.Meals.Find(m => m.Id == id).FirstOrDefaultAsync();
             if (meal == null) return NotFound("Meal not found.");
             return Ok(meal);
         }
 
-		// GET: api/mealtracker/food/{id}
-		[HttpGet("food/{id}")]
-		public async Task<ActionResult<FoodItem>> GetFoodItem(string id)
-		{
-    		// Assuming IDs are strings in the database
-    		var foodItem = await _context.FoodItems.Find(f => f.Id == id).FirstOrDefaultAsync();
+        // POST: api/mealtracker/meal
+        [HttpPost("meal")]
+        public async Task<ActionResult> CreateMeal([FromBody] Meal meal)
+        {
+            if (meal == null) return BadRequest("Invalid meal.");
 
-    		// Handle the case where the food item is not found
-    		if (foodItem == null)
-    		{
-        		return NotFound("Food item not found.");
-    		}
+            await _context.Meals.InsertOneAsync(meal);
+            return Ok(meal);
+        }
 
-    		return Ok(foodItem);
-		}
+        // DELETE: api/mealtracker/meal/{id}
+        [HttpDelete("meal/{id}")]
+        public async Task<ActionResult> DeleteMeal(string id)
+        {
+            var result = await _context.Meals.DeleteOneAsync(m => m.Id == id);
+            if (result.DeletedCount == 0) return NotFound("Meal not found.");
+            return Ok();
+        }
+
+        // GET: api/mealtracker/food/{id}
+        [HttpGet("food/{id}")]
+        public async Task<ActionResult<FoodItem>> GetFoodItem(string id)
+        {
+            var foodItem = await _context.FoodItems.Find(f => f.Id == id).FirstOrDefaultAsync();
+            if (foodItem == null) return NotFound("Food item not found.");
+            return Ok(foodItem);
+        }
 
         // GET: api/mealtracker/userhealth/{userId}
         [HttpGet("userhealth/{userId}")]
         public async Task<ActionResult<UserHealth>> GetUserHealth(string userId)
         {
-            // Ensure userId is parsed as an integer before calling the service
             if (!int.TryParse(userId, out int userIdInt))
             {
                 return BadRequest("Invalid user ID. Must be an integer.");
