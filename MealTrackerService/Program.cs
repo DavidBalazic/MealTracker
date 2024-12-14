@@ -10,8 +10,8 @@ namespace MealTrackerService
     {
         public static void Main(string[] args)
         {
-		    // Load environment variables from .env file
-    		DotEnv.Load();
+            // Load environment variables from .env file
+            DotEnv.Load();
 
             var builder = WebApplication.CreateBuilder(args);
 
@@ -34,26 +34,29 @@ namespace MealTrackerService
             });
 
             // Configure MongoDB
-            builder.Services.Configure<MongoSettings>(
-                builder.Configuration.GetSection("MongoSettings"));
+            builder.Services.Configure<MongoSettings>(options =>
+            {
+                options.ConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING")!;
+                options.DatabaseName = Environment.GetEnvironmentVariable("MONGO_DATABASE_NAME")!;
+            });
 
             builder.Services.AddSingleton<IMongoSettings>(sp =>
                 sp.GetRequiredService<IOptions<MongoSettings>>().Value);
 
             builder.Services.AddSingleton<MongoClient>(s =>
-                new MongoClient(builder.Configuration["MongoSettings:ConnectionString"]));
+                new MongoClient(Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING")));
 
             builder.Services.AddScoped<IMealTrackerContext, MealTrackerContext>();
 
             // Register HTTP Clients
             builder.Services.AddHttpClient<MealTrackerService.Services.FoodServiceClient>(client =>
             {
-                client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:FoodService"]);
+                client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("FOOD_SERVICE_URL")!);
             });
 
             builder.Services.AddHttpClient<MealTrackerService.Services.UserServiceClient>(client =>
             {
-                client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:UserService"]);
+                client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("USER_SERVICE_URL")!);
             });
 
             // Configure CORS
