@@ -48,6 +48,30 @@ namespace MealTrackerService.Controllers
             return Ok();
         }
 
+        // PUT: api/mealtracker/mealplan/{id}
+        [HttpPut("mealplan/{id}")]
+        public async Task<ActionResult> UpdateMealPlan(string id, [FromBody] MealPlan updatedMealPlan)
+        {
+            if (updatedMealPlan == null || id != updatedMealPlan.Id)
+            {
+                return BadRequest("Invalid meal plan data or mismatched ID.");
+            }
+
+            var existingMealPlan = await _context.MealPlans.Find(mp => mp.Id == id).FirstOrDefaultAsync();
+            if (existingMealPlan == null)
+            {
+                return NotFound("Meal plan not found.");
+            }
+
+            var result = await _context.MealPlans.ReplaceOneAsync(mp => mp.Id == id, updatedMealPlan);
+            if (result.MatchedCount == 0)
+            {
+                return NotFound("Meal plan not updated.");
+            }
+
+            return Ok(updatedMealPlan);
+        }
+
         // GET: api/mealtracker/meals/{id}
         [HttpGet("meals/{id}")]
         public async Task<ActionResult<Meal>> GetMeal(string id)
