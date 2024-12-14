@@ -2,6 +2,7 @@ using MealTrackerService.Data;
 using Microsoft.Extensions.Options;
 using MealTrackerService.Models;
 using MongoDB.Driver;
+using dotenv.net;
 
 namespace MealTrackerService
 {
@@ -9,6 +10,9 @@ namespace MealTrackerService
     {
         public static void Main(string[] args)
         {
+		    // Load environment variables from .env file
+    		DotEnv.Load();
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
@@ -52,6 +56,17 @@ namespace MealTrackerService
                 client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:UserService"]);
             });
 
+            // Configure CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp", policy =>
+                {
+                    policy.WithOrigins(Environment.GetEnvironmentVariable("REACT_APP_URL")!) // Replace with your React app's URL
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -66,6 +81,10 @@ namespace MealTrackerService
             }
 
             app.UseHttpsRedirection();
+
+            // Enable CORS
+            app.UseCors("AllowReactApp");
+
             app.UseAuthorization();
             app.MapControllers(); // Enable controller-based routing
 

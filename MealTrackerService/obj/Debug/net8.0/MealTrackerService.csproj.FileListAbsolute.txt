@@ -366,3 +366,4 @@ C:/Users/Uporabnik/Desktop/FAKS/SOA/SOA_project/SOA_ScrumdogMillionaires/MealTra
 /Users/miha_plemenitas/RiderProjects/SOA_ScrumdogMillionaires/MealTrackerService/obj/Debug/net8.0/MealTrackerService.pdb
 /Users/miha_plemenitas/RiderProjects/SOA_ScrumdogMillionaires/MealTrackerService/obj/Debug/net8.0/MealTrackerService.genruntimeconfig.cache
 /Users/miha_plemenitas/RiderProjects/SOA_ScrumdogMillionaires/MealTrackerService/obj/Debug/net8.0/ref/MealTrackerService.dll
+/Users/miha_plemenitas/RiderProjects/SOA_ScrumdogMillionaires/MealTrackerService/bin/Debug/net8.0/dotenv.net.dll

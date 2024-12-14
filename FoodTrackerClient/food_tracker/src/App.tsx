@@ -20,6 +20,10 @@ function App() {
     console.log("Signed in");
   };
 
+  const handleMealPlanCreated = async () => {
+    console.log("Meal plan created successfully!");
+  };
+
   return (
     <Router>
       <div className="flex flex-col min-h-screen bg-gray-100">
@@ -29,7 +33,10 @@ function App() {
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/meals" element={<Meals />} />
+            <Route
+              path="/meals"
+              element={<Meals onMealPlanCreated={handleMealPlanCreated} />}
+            />
             <Route path="/about" element={<About />} />
             <Route
               path="/signin"

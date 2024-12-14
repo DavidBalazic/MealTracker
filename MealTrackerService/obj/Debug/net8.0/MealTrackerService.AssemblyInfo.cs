@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MealTrackerService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+10385993aa56d8ab506416b99830b1cda2c16a32")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8891c8b7c6a36b6f98dee497550f1ee82911b0a6")]
 [assembly: System.Reflection.AssemblyProductAttribute("MealTrackerService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MealTrackerService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
