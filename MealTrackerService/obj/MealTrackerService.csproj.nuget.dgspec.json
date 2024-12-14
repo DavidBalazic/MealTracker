@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Uporabnik\\Desktop\\FAKS\\SOA\\SOA_project\\SOA_ScrumdogMillionaires\\MealTrackerService\\MealTrackerService.csproj": {}
+    "/Users/miha_plemenitas/RiderProjects/SOA_ScrumdogMillionaires/MealTrackerService/MealTrackerService.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Uporabnik\\Desktop\\FAKS\\SOA\\SOA_project\\SOA_ScrumdogMillionaires\\MealTrackerService\\MealTrackerService.csproj": {
+    "/Users/miha_plemenitas/RiderProjects/SOA_ScrumdogMillionaires/MealTrackerService/MealTrackerService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Uporabnik\\Desktop\\FAKS\\SOA\\SOA_project\\SOA_ScrumdogMillionaires\\MealTrackerService\\MealTrackerService.csproj",
+        "projectUniqueName": "/Users/miha_plemenitas/RiderProjects/SOA_ScrumdogMillionaires/MealTrackerService/MealTrackerService.csproj",
         "projectName": "MealTrackerService",
-        "projectPath": "C:\\Users\\Uporabnik\\Desktop\\FAKS\\SOA\\SOA_project\\SOA_ScrumdogMillionaires\\MealTrackerService\\MealTrackerService.csproj",
-        "packagesPath": "C:\\Users\\Uporabnik\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Uporabnik\\Desktop\\FAKS\\SOA\\SOA_project\\SOA_ScrumdogMillionaires\\MealTrackerService\\obj\\",
+        "projectPath": "/Users/miha_plemenitas/RiderProjects/SOA_ScrumdogMillionaires/MealTrackerService/MealTrackerService.csproj",
+        "packagesPath": "/Users/miha_plemenitas/.nuget/packages/",
+        "outputPath": "/Users/miha_plemenitas/RiderProjects/SOA_ScrumdogMillionaires/MealTrackerService/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Uporabnik\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/Users/miha_plemenitas/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -101,7 +101,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.403/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
