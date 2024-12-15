@@ -60,15 +60,17 @@ namespace MealTrackerService
             });
 
             // Configure CORS
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowReactApp", policy =>
-                {
-                    policy.WithOrigins(Environment.GetEnvironmentVariable("REACT_APP_URL")!) // Replace with your React app's URL
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
-                });
-            });
+			var reactAppUrl = Environment.GetEnvironmentVariable("REACT_APP_URL");
+
+			builder.Services.AddCors(options =>
+			{
+   				options.AddPolicy("AllowReactApp", policy =>
+    			{	
+        			policy.WithOrigins(reactAppUrl) // Allow React frontend
+              			.AllowAnyHeader()
+              			.AllowAnyMethod();
+    			});
+			});
 
             var app = builder.Build();
 
