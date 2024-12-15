@@ -1,0 +1,16 @@
+# ASP .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Other
+.vscode/
+*.log
+*.lock
+*.tmp
+secrets.json
+.env
