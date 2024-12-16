@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using MealTrackerService.Models;
 using MongoDB.Driver;
 using dotenv.net;
+using FoodServiceClient;
 
 namespace MealTrackerService
 {
@@ -16,7 +17,7 @@ namespace MealTrackerService
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllers(); // Add controllers for potential CRUD operations
+            builder.Services.AddControllers(); // Add controllers for CRUD operations
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
@@ -49,28 +50,32 @@ namespace MealTrackerService
             builder.Services.AddScoped<IMealTrackerContext, MealTrackerContext>();
 
             // Register HTTP Clients
-            builder.Services.AddHttpClient<MealTrackerService.Services.FoodServiceClient>(client =>
+            builder.Services.AddHttpClient<FoodServiceClient.FoodServiceClient>((serviceProvider, client) =>
             {
-                client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("FOOD_SERVICE_URL")!);
-            });
-
-            builder.Services.AddHttpClient<MealTrackerService.Services.UserServiceClient>(client =>
+                var baseUrl = Environment.GetEnvironmentVariable("FOOD_SERVICE_URL");
+                if (string.IsNullOrEmpty(baseUrl))
+                {
+                    throw new InvalidOperationException("FOOD_SERVICE_URL is not set in environment variables.");
+                }
+                client.BaseAddress = new Uri(baseUrl);
+            }).AddTypedClient((httpClient, serviceProvider) =>
             {
-                client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("USER_SERVICE_URL")!);
+                var baseUrl = Environment.GetEnvironmentVariable("FOOD_SERVICE_URL");
+                return new FoodServiceClient.FoodServiceClient(baseUrl!, httpClient);
             });
-
+            
             // Configure CORS
-			var reactAppUrl = Environment.GetEnvironmentVariable("REACT_APP_URL");
+            var reactAppUrl = Environment.GetEnvironmentVariable("REACT_APP_URL");
 
-			builder.Services.AddCors(options =>
-			{
-   				options.AddPolicy("AllowReactApp", policy =>
-    			{	
-        			policy.WithOrigins(reactAppUrl) // Allow React frontend
-              			.AllowAnyHeader()
-              			.AllowAnyMethod();
-    			});
-			});
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp", policy =>
+                {
+                    policy.WithOrigins(reactAppUrl) // Allow React frontend
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
 
             var app = builder.Build();
 
@@ -81,7 +86,7 @@ namespace MealTrackerService
                 app.UseSwaggerUI(options =>
                 {
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Meal Tracker API v1");
-                    options.RoutePrefix = string.Empty; // Swagger will be served at the root URL
+                    options.RoutePrefix = string.Empty; // Swagger served at root URL
                 });
             }
 

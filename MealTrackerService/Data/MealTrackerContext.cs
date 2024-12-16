@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using FoodServiceClient; // Reference the Food model from FoodService
 using MealTrackerService.Models;
 
 namespace MealTrackerService.Data
@@ -30,13 +31,13 @@ namespace MealTrackerService.Data
 
         public IMongoCollection<MealPlan> MealPlans => _database.GetCollection<MealPlan>("MealPlans");
         public IMongoCollection<Meal> Meals => _database.GetCollection<Meal>("Meals");
-        public IMongoCollection<FoodItem> FoodItems => _database.GetCollection<FoodItem>("FoodItems");
+        public IMongoCollection<Food> Foods => _database.GetCollection<Food>("Food"); // Use Food from FoodServiceClient
     }
 
     public interface IMealTrackerContext
     {
         IMongoCollection<MealPlan> MealPlans { get; }
         IMongoCollection<Meal> Meals { get; }
-        IMongoCollection<FoodItem> FoodItems { get; }
+        IMongoCollection<Food> Foods { get; } // Foods collection from FoodServiceClient
     }
 }

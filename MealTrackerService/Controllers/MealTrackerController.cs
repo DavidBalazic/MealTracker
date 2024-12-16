@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MealTrackerService.Data;
 using MealTrackerService.Models;
-using MealTrackerService.Services;
 using MongoDB.Driver;
+using MongoDB.Bson; 
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using FoodServiceClient;
 
 namespace MealTrackerService.Controllers
 {
@@ -11,116 +14,160 @@ namespace MealTrackerService.Controllers
     public class MealTrackerController : ControllerBase
     {
         private readonly IMealTrackerContext _context;
-        private readonly FoodServiceClient _foodServiceClient;
-        private readonly UserServiceClient _userServiceClient;
+        private readonly FoodServiceClient.FoodServiceClient _foodServiceClient;
 
-        public MealTrackerController(IMealTrackerContext context, FoodServiceClient foodServiceClient, UserServiceClient userServiceClient)
+        public MealTrackerController(IMealTrackerContext context, FoodServiceClient.FoodServiceClient foodServiceClient)
         {
             _context = context;
             _foodServiceClient = foodServiceClient;
-            _userServiceClient = userServiceClient;
         }
 
         // GET: api/mealtracker/mealplans
         [HttpGet("mealplans")]
-        public async Task<ActionResult<List<MealPlan>>> GetMealPlans()
+        public async Task<IActionResult> GetMealPlans()
         {
             var mealPlans = await _context.MealPlans.Find(_ => true).ToListAsync();
+
+            foreach (var mealPlan in mealPlans)
+            {
+                foreach (var meal in mealPlan.Meals)
+                {
+                    // Fetch food details for each FoodId in the meal
+                    foreach (var foodId in meal.FoodIds)
+                    {
+                        var food = await _foodServiceClient.FoodsGETAsync(foodId);
+                        if (food != null)
+                        {
+                            meal.Foods.Add(food);
+                        }
+                    }
+                }
+            }
+
             return Ok(mealPlans);
         }
 
         // POST: api/mealtracker/mealplan
         [HttpPost("mealplan")]
-        public async Task<ActionResult> CreateMealPlan([FromBody] MealPlan mealPlan)
+        public async Task<IActionResult> CreateMealPlan([FromBody] MealPlan mealPlan)
         {
-            if (mealPlan == null) return BadRequest("Invalid meal plan.");
+            if (mealPlan == null)
+            {
+                return BadRequest("MealPlan cannot be null.");
+            }
 
+            // Process each meal and its foods
+            foreach (var meal in mealPlan.Meals)
+            {
+                var newFoodIds = new List<string>();
+
+                foreach (var food in meal.Foods)
+                {
+                    if (string.IsNullOrEmpty(food.Id) || !ObjectId.TryParse(food.Id, out _))
+                    {
+                        // If ID is not valid, return a bad request
+                        return BadRequest($"Food '{food.Name}' must have a valid 24-digit hex string ID.");
+                    }
+                    else
+                    {
+                        // Add the food to the FoodService (ensure no duplicates)
+                        await EnsureFoodInDatabaseAsync(food);
+
+                        // Add the specified Food ID to the list
+                        newFoodIds.Add(food.Id);
+                    }
+                }
+
+                // Replace the FoodIds list with the updated list (new or existing)
+                meal.FoodIds = newFoodIds;
+                meal.Foods.Clear(); // Optionally clear Foods, as IDs suffice
+            }
+
+            // Insert the updated MealPlan into the MealPlan DB
             await _context.MealPlans.InsertOneAsync(mealPlan);
-            return Ok(mealPlan);
+
+            return CreatedAtAction(nameof(GetMealPlans), new { id = mealPlan.Id }, mealPlan);
         }
 
+        private async Task EnsureFoodInDatabaseAsync(Food food)
+        {
+            try
+            {
+                // Check if food already exists in the FoodService
+                var existingFood = await _foodServiceClient.FoodsGETAsync(food.Id);
+                if (existingFood == null)
+                {
+                    // If food doesn't exist, add it to the FoodService
+                    await _foodServiceClient.FoodsPOSTAsync(food);
+                }
+            }
+            catch (ApiException)
+            {
+                // If the food is not found or any error occurs, insert it
+                await _foodServiceClient.FoodsPOSTAsync(food);
+            }
+        }
+        
         // DELETE: api/mealtracker/mealplan/{id}
         [HttpDelete("mealplan/{id}")]
-        public async Task<ActionResult> DeleteMealPlan(string id)
+        public async Task<IActionResult> DeleteMealPlan(string id)
         {
-            var result = await _context.MealPlans.DeleteOneAsync(mp => mp.Id == id);
-            if (result.DeletedCount == 0) return NotFound("Meal plan not found.");
-            return Ok();
-        }
+            var result = await _context.MealPlans.DeleteOneAsync(m => m.Id == id);
 
-        // PUT: api/mealtracker/mealplan/{id}
-        [HttpPut("mealplan/{id}")]
-        public async Task<ActionResult> UpdateMealPlan(string id, [FromBody] MealPlan updatedMealPlan)
-        {
-            if (updatedMealPlan == null || id != updatedMealPlan.Id)
+            if (result.DeletedCount == 0)
             {
-                return BadRequest("Invalid meal plan data or mismatched ID.");
+                return NotFound($"MealPlan with id {id} not found.");
             }
 
-            var existingMealPlan = await _context.MealPlans.Find(mp => mp.Id == id).FirstOrDefaultAsync();
-            if (existingMealPlan == null)
-            {
-                return NotFound("Meal plan not found.");
-            }
-
-            var result = await _context.MealPlans.ReplaceOneAsync(mp => mp.Id == id, updatedMealPlan);
-            if (result.MatchedCount == 0)
-            {
-                return NotFound("Meal plan not updated.");
-            }
-
-            return Ok(updatedMealPlan);
+            return NoContent();
         }
 
-        // GET: api/mealtracker/meals/{id}
-        [HttpGet("meals/{id}")]
-        public async Task<ActionResult<Meal>> GetMeal(string id)
+        // GET: api/mealtracker/foods
+        [HttpGet("foods")]
+        public async Task<IActionResult> GetAllFoods()
         {
-            var meal = await _context.Meals.Find(m => m.Id == id).FirstOrDefaultAsync();
-            if (meal == null) return NotFound("Meal not found.");
-            return Ok(meal);
-        }
-
-        // POST: api/mealtracker/meal
-        [HttpPost("meal")]
-        public async Task<ActionResult> CreateMeal([FromBody] Meal meal)
-        {
-            if (meal == null) return BadRequest("Invalid meal.");
-
-            await _context.Meals.InsertOneAsync(meal);
-            return Ok(meal);
-        }
-
-        // DELETE: api/mealtracker/meal/{id}
-        [HttpDelete("meal/{id}")]
-        public async Task<ActionResult> DeleteMeal(string id)
-        {
-            var result = await _context.Meals.DeleteOneAsync(m => m.Id == id);
-            if (result.DeletedCount == 0) return NotFound("Meal not found.");
-            return Ok();
+            var foods = await _foodServiceClient.FoodsAllAsync();
+            return Ok(foods);
         }
 
         // GET: api/mealtracker/food/{id}
         [HttpGet("food/{id}")]
-        public async Task<ActionResult<FoodItem>> GetFoodItem(string id)
+        public async Task<IActionResult> GetFoodById(string id)
         {
-            var foodItem = await _context.FoodItems.Find(f => f.Id == id).FirstOrDefaultAsync();
-            if (foodItem == null) return NotFound("Food item not found.");
-            return Ok(foodItem);
-        }
-
-        // GET: api/mealtracker/userhealth/{userId}
-        [HttpGet("userhealth/{userId}")]
-        public async Task<ActionResult<UserHealth>> GetUserHealth(string userId)
-        {
-            if (!int.TryParse(userId, out int userIdInt))
+            var food = await _foodServiceClient.FoodsGETAsync(id);
+            if (food == null)
             {
-                return BadRequest("Invalid user ID. Must be an integer.");
+                return NotFound($"Food with id {id} not found.");
             }
 
-            var userHealth = await _userServiceClient.GetUserHealthAsync(userIdInt);
-            if (userHealth == null) return NotFound("User health data not found.");
-            return Ok(userHealth);
+            return Ok(food);
+        }
+
+        // GET: api/mealtracker/meal/{id}
+        [HttpGet("meal/{id}")]
+        public async Task<IActionResult> GetMealById(string id)
+        {
+            var mealPlan = await _context.MealPlans
+                .Find(m => m.Meals.Any(meal => meal.Id == id))
+                .FirstOrDefaultAsync();
+
+            if (mealPlan == null)
+            {
+                return NotFound($"Meal with id {id} not found.");
+            }
+
+            var meal = mealPlan.Meals.Find(meal => meal.Id == id);
+
+            foreach (var foodId in meal.FoodIds)
+            {
+                var food = await _foodServiceClient.FoodsGETAsync(foodId);
+                if (food != null)
+                {
+                    meal.Foods.Add(food);
+                }
+            }
+
+            return Ok(meal);
         }
     }
 }
