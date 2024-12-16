@@ -13,9 +13,7 @@ import { mealTrackerApi } from "../../lib/axios";
 import {
   MealPlan,
   Meal,
-  FoodItem,
-} from "../../ClientGenerator/generated/models";
-import { ObjectId } from "bson"; // Import ObjectId
+} from "../../ClientGenerator/generated/MealTrackerClient/models";
 
 interface EditMealProps {
   mealPlan: MealPlan;
@@ -28,59 +26,17 @@ const EditMeal: React.FC<EditMealProps> = ({
   onClose,
   onMealPlanUpdated,
 }) => {
-  // Ensure mealPlan.date is parsed as a Date object
   const [mealPlanDate, setMealPlanDate] = useState<Date>(
     mealPlan.date ? new Date(mealPlan.date) : new Date()
   );
-  const [meals, setMeals] = useState<Meal[]>(mealPlan.meals || ([] as Meal[]));
-  const [loading, setLoading] = useState(false);
-
-  const handleMealChange = (
-    mealIndex: number,
-    field: "name" | "foodItems",
-    value: any
-  ) => {
-    const updatedMeals = [...meals];
-    if (field === "name") {
-      updatedMeals[mealIndex].name = value;
-    } else if (field === "foodItems") {
-      updatedMeals[mealIndex].foodItems = value;
-    }
-    setMeals(updatedMeals);
-  };
-
-  const handleAddFoodItem = (mealIndex: number) => {
-    const updatedMeals = [...meals];
-
-    // Ensure foodItems is initialized and assert the type
-    updatedMeals[mealIndex].foodItems = updatedMeals[mealIndex].foodItems || [];
-    (updatedMeals[mealIndex].foodItems as FoodItem[]).push({
-      id: new ObjectId().toHexString(),
-      name: "",
-      calories: 0,
-    });
-
-    setMeals(updatedMeals);
-  };
+  const [meals, setMeals] = useState<Meal[]>(mealPlan.meals || []);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSaveChanges = async () => {
-    if (!mealPlanDate || meals.some((meal) => !meal.name?.trim())) {
-      alert("Please fill out all required fields.");
-      return;
-    }
-
-    // Prepare the updated meal plan
     const updatedMealPlan: MealPlan = {
       ...mealPlan,
-      date: mealPlanDate, // Use the Date object directly
-      meals: meals.map((meal) => ({
-        ...meal,
-        foodItems: meal.foodItems?.filter((item) => item.name?.trim() !== ""),
-        calories: meal.foodItems?.reduce(
-          (sum, item) => sum + (item.calories || 0),
-          0
-        ),
-      })),
+      date: mealPlanDate, // Ensure `date` remains a Date object
+      meals,
     };
 
     try {
@@ -90,7 +46,7 @@ const EditMeal: React.FC<EditMealProps> = ({
         mealPlan: updatedMealPlan,
       });
       alert("Meal plan updated successfully!");
-      onMealPlanUpdated();
+      await onMealPlanUpdated();
       onClose();
     } catch (error) {
       console.error("Failed to update meal plan", error);
@@ -102,82 +58,44 @@ const EditMeal: React.FC<EditMealProps> = ({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="w-[90%] rounded-lg shadow-md">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Meal Plan</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label>Select Date</label>
-            <DatePicker
-              selected={mealPlanDate}
-              onChange={(date: Date | null) =>
-                setMealPlanDate(date || new Date())
-              }
-              className="w-full border p-2 rounded"
-              dateFormat="yyyy-MM-dd"
-            />
-          </div>
-          {meals.map((meal, mealIndex) => (
-            <div key={meal.id} className="p-4 border rounded-md">
-              <label>Meal Name</label>
+        <div>
+          <label className="block mb-2 text-gray-700">Date</label>
+          <DatePicker
+            selected={mealPlanDate}
+            onChange={(date) => setMealPlanDate(date || new Date())}
+            dateFormat="yyyy-MM-dd"
+            className="w-full border p-2 rounded"
+          />
+        </div>
+        <div>
+          {meals.map((meal, index) => (
+            <div key={meal.id} className="mb-4">
+              <label className="block mb-1 text-gray-700">Meal Name</label>
               <input
                 value={meal.name || ""}
                 onChange={(e) =>
-                  handleMealChange(mealIndex, "name", e.target.value)
+                  setMeals((prev) =>
+                    prev.map((m, i) =>
+                      i === index ? { ...m, name: e.target.value } : m
+                    )
+                  )
                 }
-                className="w-full border p-2 rounded mb-2"
+                className="w-full border p-2 rounded"
+                placeholder="Enter meal name"
               />
-              <label>Food Items</label>
-              {meal.foodItems?.map((item, foodItemIndex) => (
-                <div key={foodItemIndex} className="flex space-x-2 mb-2">
-                  <input
-                    placeholder="Food Name"
-                    value={item.name || ""}
-                    onChange={(e) => {
-                      const updatedFoodItems = meal.foodItems || [];
-                      updatedFoodItems[foodItemIndex] = {
-                        ...updatedFoodItems[foodItemIndex],
-                        name: e.target.value,
-                      };
-                      handleMealChange(
-                        mealIndex,
-                        "foodItems",
-                        updatedFoodItems
-                      );
-                    }}
-                    className="border p-2 rounded"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Calories"
-                    value={item.calories || 0}
-                    onChange={(e) => {
-                      const updatedFoodItems = meal.foodItems || [];
-                      updatedFoodItems[foodItemIndex] = {
-                        ...updatedFoodItems[foodItemIndex],
-                        calories: Number(e.target.value),
-                      };
-                      handleMealChange(
-                        mealIndex,
-                        "foodItems",
-                        updatedFoodItems
-                      );
-                    }}
-                    className="border p-2 rounded"
-                  />
-                </div>
-              ))}
-              <Button onClick={() => handleAddFoodItem(mealIndex)}>
-                Add Food Item
-              </Button>
             </div>
           ))}
         </div>
-        <DialogFooter className="flex justify-between mt-4">
-          <Button onClick={onClose}>Cancel</Button>
+        <DialogFooter className="flex justify-end space-x-2 mt-4">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
           <Button onClick={handleSaveChanges} disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
+            {loading ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>

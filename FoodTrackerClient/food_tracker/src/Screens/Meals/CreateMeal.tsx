@@ -1,146 +1,47 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Button } from "../../Components/ui/button";
 import {
   Dialog,
   DialogTrigger,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogFooter,
 } from "../../Components/ui/dialog";
-import { Button } from "../../Components/ui/button";
-import { Input } from "../../Components/ui/input";
-import { ObjectId } from "bson"; // Import ObjectId
-import { mealTrackerApi } from "../../lib/axios"; // Use generated API client
+import { mealTrackerApi } from "../../lib/axios";
 import {
   MealPlan,
   Meal,
-  FoodItem,
-} from "../../ClientGenerator/generated/models";
+} from "../../ClientGenerator/generated/MealTrackerClient/models";
+import { ObjectId } from "bson";
 
 interface CreateMealProps {
   onMealPlanCreated: () => Promise<void>;
 }
 
 const CreateMeal: React.FC<CreateMealProps> = ({ onMealPlanCreated }) => {
-  const [open, setOpen] = useState(false);
-  const [mealPlanDate, setMealPlanDate] = useState<Date | null>(null);
+  const [open, setOpen] = useState<boolean>(false); // State for dialog visibility
+  const [mealPlanDate, setMealPlanDate] = useState<Date | null>(new Date());
   const [meals, setMeals] = useState<Meal[]>([
-    {
-      id: new ObjectId().toHexString(),
-      name: "",
-      foodItems: [
-        { id: new ObjectId().toHexString(), name: "", calories: 0 },
-      ] as FoodItem[],
-      calories: 0,
-    },
+    { id: new ObjectId().toHexString(), name: "", calories: 0 },
   ]);
-  const [loading, setLoading] = useState(false);
-
-  const handleAddMeal = () => {
-    setMeals([
-      ...meals,
-      {
-        id: new ObjectId().toHexString(),
-        name: "",
-        foodItems: [
-          { id: new ObjectId().toHexString(), name: "", calories: 0 },
-        ],
-        calories: 0,
-      },
-    ]);
-  };
-
-  const handleMealChange = (
-    mealIndex: number,
-    field: "name" | "foodItems",
-    value: any
-  ) => {
-    const updatedMeals = [...meals];
-    if (field === "name") {
-      updatedMeals[mealIndex].name = value;
-    } else if (field === "foodItems") {
-      updatedMeals[mealIndex].foodItems = value;
-    }
-    setMeals(updatedMeals);
-  };
-
-  const handleAddFoodItem = (mealIndex: number) => {
-    const updatedMeals = [...meals];
-
-    // Ensure foodItems is initialized and assert the type
-    updatedMeals[mealIndex].foodItems = updatedMeals[mealIndex].foodItems || [];
-    (updatedMeals[mealIndex].foodItems as FoodItem[]).push({
-      id: new ObjectId().toHexString(),
-      name: "",
-      calories: 0,
-    });
-
-    setMeals(updatedMeals);
-  };
-
-  const handleFoodItemChange = (
-    mealIndex: number,
-    foodItemIndex: number,
-    field: "name" | "calories",
-    value: any
-  ) => {
-    const updatedMeals = [...meals];
-    updatedMeals[mealIndex].foodItems![foodItemIndex] = {
-      ...updatedMeals[mealIndex].foodItems![foodItemIndex],
-      [field]: value,
-    };
-
-    // Recalculate meal calories
-    updatedMeals[mealIndex].calories = updatedMeals[
-      mealIndex
-    ].foodItems!.reduce((sum, item) => sum + (item.calories || 0), 0);
-    setMeals(updatedMeals);
-  };
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleCreateMealPlan = async () => {
-    if (!mealPlanDate || meals.some((meal) => !meal.name?.trim())) {
-      alert("Please fill out all required fields.");
-      return;
-    }
-
-    // Prepare the meal plan
-    const mealPlan: MealPlan = {
+    const newMealPlan: MealPlan = {
       id: new ObjectId().toHexString(),
-      date: mealPlanDate,
-      meals: meals.map((meal) => ({
-        id: meal.id,
-        name: meal.name,
-        foodItems:
-          meal.foodItems?.filter((item) => item.name?.trim() !== "") || [],
-        calories:
-          meal.foodItems?.reduce(
-            (sum, item) => sum + (item.calories || 0),
-            0
-          ) || 0,
-      })),
+      date: mealPlanDate || new Date(), // Ensure `date` is a Date object
+      meals,
     };
 
     try {
       setLoading(true);
       await mealTrackerApi.apiMealTrackerMealplanPost({
-        mealPlan,
+        mealPlan: newMealPlan,
       });
       alert("Meal plan created successfully!");
-      setOpen(false);
-      setMealPlanDate(null);
-      setMeals([
-        {
-          id: new ObjectId().toHexString(),
-          name: "",
-          foodItems: [
-            { id: new ObjectId().toHexString(), name: "", calories: 0 },
-          ],
-          calories: 0,
-        },
-      ]);
       await onMealPlanCreated();
+      setOpen(false); // Close dialog on success
     } catch (error) {
       console.error("Failed to create meal plan", error);
       alert("Failed to create meal plan.");
@@ -150,78 +51,73 @@ const CreateMeal: React.FC<CreateMealProps> = ({ onMealPlanCreated }) => {
   };
 
   return (
-    <div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button className="bg-black text-white hover:bg-gray-800 px-4 py-2 rounded-md">
-            Create Meal Plan
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Meal Plan</DialogTitle>
-          </DialogHeader>
-          <div>
-            <label>Select Date</label>
-            <DatePicker
-              selected={mealPlanDate}
-              onChange={(date: Date | null) => setMealPlanDate(date)}
-              placeholderText="Select a date"
-            />
-          </div>
-          {meals.map((meal, mealIndex) => (
-            <div key={meal.id}>
-              <label>Meal Name</label>
-              <Input
-                value={meal.name || ""}
-                onChange={(e) =>
-                  handleMealChange(mealIndex, "name", e.target.value)
-                }
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="bg-black text-white hover:bg-gray-800 px-4 py-2 rounded-md">
+          Create New Meal Plan
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="space-y-4">
+        <h2 className="text-xl font-semibold">Create New Meal Plan</h2>
+        <div>
+          <label className="block text-gray-700 mb-1">Select Date</label>
+          <DatePicker
+            selected={mealPlanDate}
+            onChange={(date) => setMealPlanDate(date)}
+            dateFormat="yyyy-MM-dd"
+            className="w-full border p-2 rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 mb-1">Meals</label>
+          {meals.map((meal, index) => (
+            <div key={meal.id} className="flex items-center gap-4 mb-2">
+              <input
+                type="text"
+                placeholder="Meal Name"
+                value={meal.name || ""} // Ensure value is never null
+                onChange={(e) => {
+                  const updatedMeals = [...meals];
+                  updatedMeals[index].name = e.target.value || "";
+                  setMeals(updatedMeals);
+                }}
+                className="w-full border p-2 rounded"
               />
-              {meal.foodItems?.map((item, foodItemIndex) => (
-                <div key={item.id}>
-                  <Input
-                    placeholder="Food name"
-                    value={item.name || ""}
-                    onChange={(e) =>
-                      handleFoodItemChange(
-                        mealIndex,
-                        foodItemIndex,
-                        "name",
-                        e.target.value
-                      )
-                    }
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Calories"
-                    value={item.calories || 0}
-                    onChange={(e) =>
-                      handleFoodItemChange(
-                        mealIndex,
-                        foodItemIndex,
-                        "calories",
-                        Number(e.target.value)
-                      )
-                    }
-                  />
-                </div>
-              ))}
-              <Button onClick={() => handleAddFoodItem(mealIndex)}>
-                Add Food Item
-              </Button>
+              <input
+                type="number"
+                placeholder="Calories"
+                value={meal.calories ?? 0} // Ensure value is a number
+                onChange={(e) => {
+                  const updatedMeals = [...meals];
+                  updatedMeals[index].calories = Number(e.target.value) || 0;
+                  setMeals(updatedMeals);
+                }}
+                className="w-32 border p-2 rounded"
+              />
             </div>
           ))}
-          <Button onClick={handleAddMeal}>Add Another Meal</Button>
-          <DialogFooter>
-            <Button onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateMealPlan} disabled={loading}>
-              {loading ? "Creating..." : "Create"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+          <Button
+            onClick={() =>
+              setMeals([
+                ...meals,
+                { id: new ObjectId().toHexString(), name: "", calories: 0 },
+              ])
+            }
+            className="mt-2"
+          >
+            Add Meal
+          </Button>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleCreateMealPlan} disabled={loading}>
+            {loading ? "Creating..." : "Create"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

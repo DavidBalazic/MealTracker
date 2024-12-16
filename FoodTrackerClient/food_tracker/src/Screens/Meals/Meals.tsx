@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "../../Components/ui/card";
 import CreateMeal from "./CreateMeal";
 import EditMeal from "./EditMeal";
-import { mealTrackerApi } from "../../lib/axios"; // Import configured API instance
-import { MealPlan } from "../../ClientGenerator/generated/models";
+import { mealTrackerApi } from "../../lib/axios";
+import { MealPlan } from "../../ClientGenerator/generated/MealTrackerClient/models";
 
 interface MealsProps {
-  onMealPlanCreated?: () => Promise<void>; // Make it optional
+  onMealPlanCreated?: () => Promise<void>;
 }
 
 const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
@@ -14,22 +14,40 @@ const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
   const [selectedMealPlan, setSelectedMealPlan] = useState<MealPlan | null>(
     null
   );
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Function to fetch meal plans
   const fetchMealPlans = async () => {
     try {
       setLoading(true);
-      const response = await mealTrackerApi.apiMealTrackerMealplansGet(); // Fetch using the API
-      setMealPlans(response);
+      setError(null);
+
+      // Fetch meal plans
+      const response = await mealTrackerApi.apiMealTrackerMealplansGet();
+      console.log("API Response:", response);
+
+      // Ensure the response is an array and process `date`
+      if (!response || !Array.isArray(response)) {
+        throw new Error("Invalid response format. Expected an array.");
+      }
+
+      // Convert `date` strings to Date objects safely
+      const parsedMealPlans: MealPlan[] = response.map((plan) => ({
+        ...plan,
+        date: plan.date ? new Date(plan.date) : undefined,
+      }));
+
+      setMealPlans(parsedMealPlans);
     } catch (err) {
       console.error("Failed to fetch meal plans", err);
-      setError("Failed to load meal plans.");
+      setError("Failed to load meal plans. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch meal plans on component mount
   useEffect(() => {
     fetchMealPlans();
   }, []);
@@ -39,14 +57,18 @@ const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
       <h1 className="text-4xl font-bold text-black mb-8 text-center">
         Active Meal Plans
       </h1>
+
       <div className="flex justify-center mb-8">
+        {/* Pass fetchMealPlans to CreateMeal to trigger a refresh */}
         <CreateMeal onMealPlanCreated={onMealPlanCreated || fetchMealPlans} />
       </div>
+
       {loading && <p className="text-center">Loading meal plans...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
+
+      {/* Display meal plans */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {mealPlans.map((plan) => {
-          // Safely handle potential undefined or null values for meals
           const totalCalories = (plan.meals ?? []).reduce(
             (sum, meal) => sum + (meal.calories || 0),
             0
@@ -60,7 +82,7 @@ const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
             >
               <CardContent>
                 <h2 className="text-lg font-semibold text-gray-700 mb-2">
-                  {new Date(plan.date || "").toLocaleDateString("en-GB")} -{" "}
+                  {plan.date ? plan.date.toLocaleDateString() : "No Date"} -{" "}
                   {totalCalories} Calories
                 </h2>
                 <ul>
@@ -77,6 +99,7 @@ const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
         })}
       </div>
 
+      {/* Edit Meal Modal */}
       {selectedMealPlan && (
         <EditMeal
           mealPlan={selectedMealPlan}

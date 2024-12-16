@@ -1,0 +1,276 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Meal Tracker API",
+    "description": "API documentation for the Meal Tracker Service",
+    "contact": {
+      "name": "Your Name",
+      "email": "your.email@example.com"
+    },
+    "version": "v1"
+  },
+  "paths": {
+    "/api/MealTracker/mealplans": {
+      "get": {
+        "tags": [
+          "MealTracker"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/MealTracker/mealplan/{id}": {
+      "put": {
+        "tags": [
+          "MealTracker"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MealPlan"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MealPlan"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MealPlan"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MealTracker"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/MealTracker/mealplan": {
+      "post": {
+        "tags": [
+          "MealTracker"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MealPlan"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MealPlan"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MealPlan"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/MealTracker/foods": {
+      "get": {
+        "tags": [
+          "MealTracker"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/MealTracker/food/{id}": {
+      "get": {
+        "tags": [
+          "MealTracker"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/MealTracker/meal/{id}": {
+      "get": {
+        "tags": [
+          "MealTracker"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Food": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "calories": {
+            "type": "number",
+            "format": "double"
+          },
+          "protein": {
+            "type": "number",
+            "format": "double"
+          },
+          "carbohydrates": {
+            "type": "number",
+            "format": "double"
+          },
+          "fat": {
+            "type": "number",
+            "format": "double"
+          },
+          "servingSize": {
+            "type": "string",
+            "nullable": true
+          },
+          "unit": {
+            "type": "string",
+            "nullable": true
+          },
+          "allergens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Meal": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "foodIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "foods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Food"
+            },
+            "nullable": true
+          },
+          "calories": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MealPlan": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "meals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Meal"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
