@@ -1,26 +1,12 @@
 import React, { useState, useEffect } from "react";
-import api from "../../lib/axios";
 import { Card, CardContent } from "../../Components/ui/card";
 import CreateMeal from "./CreateMeal";
 import EditMeal from "./EditMeal";
-
-interface MealPlan {
-  id: string;
-  date: string;
-  meals: Array<{
-    id: string;
-    name: string;
-    foodItems: Array<{
-      id: string;
-      name: string;
-      calories: number;
-    }>;
-    calories: number;
-  }>;
-}
+import { mealTrackerApi } from "../../lib/axios"; // Import configured API instance
+import { MealPlan } from "../../ClientGenerator/generated/models";
 
 interface MealsProps {
-  onMealPlanCreated: () => Promise<void>;
+  onMealPlanCreated?: () => Promise<void>; // Make it optional
 }
 
 const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
@@ -33,12 +19,13 @@ const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
 
   const fetchMealPlans = async () => {
     try {
-      const response = await api.get("/mealtracker/mealplans");
-      setMealPlans(response.data);
-      setLoading(false);
+      setLoading(true);
+      const response = await mealTrackerApi.apiMealTrackerMealplansGet(); // Fetch using the API
+      setMealPlans(response);
     } catch (err) {
       console.error("Failed to fetch meal plans", err);
       setError("Failed to load meal plans.");
+    } finally {
       setLoading(false);
     }
   };
@@ -53,15 +40,15 @@ const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
         Active Meal Plans
       </h1>
       <div className="flex justify-center mb-8">
-        <CreateMeal onMealPlanCreated={fetchMealPlans} />
+        <CreateMeal onMealPlanCreated={onMealPlanCreated || fetchMealPlans} />
       </div>
       {loading && <p className="text-center">Loading meal plans...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {mealPlans.map((plan) => {
-          // Calculate the total calories for the meal plan
-          const totalCalories = plan.meals.reduce(
-            (sum, meal) => sum + meal.calories,
+          // Safely handle potential undefined or null values for meals
+          const totalCalories = (plan.meals ?? []).reduce(
+            (sum, meal) => sum + (meal.calories || 0),
             0
           );
 
@@ -69,18 +56,18 @@ const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
             <Card
               key={plan.id}
               className="p-4 rounded-lg border shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => setSelectedMealPlan(plan)} // Open EditMeal dialog on click
+              onClick={() => setSelectedMealPlan(plan)}
             >
               <CardContent>
                 <h2 className="text-lg font-semibold text-gray-700 mb-2">
-                  {/* Format date to show day/month/year and total calories */}
-                  {new Date(plan.date).toLocaleDateString("en-GB")} -{" "}
+                  {new Date(plan.date || "").toLocaleDateString("en-GB")} -{" "}
                   {totalCalories} Calories
                 </h2>
-                <ul className="space-y-1">
-                  {plan.meals.map((meal) => (
-                    <li key={meal.id} className="text-gray-600">
-                      {meal.name} - {meal.calories} calories
+                <ul>
+                  {(plan.meals ?? []).map((meal) => (
+                    <li key={meal.id}>
+                      {meal.name || "Unnamed Meal"} - {meal.calories || 0}{" "}
+                      Calories
                     </li>
                   ))}
                 </ul>
@@ -90,7 +77,6 @@ const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
         })}
       </div>
 
-      {/* Render EditMeal dialog if a meal plan is selected */}
       {selectedMealPlan && (
         <EditMeal
           mealPlan={selectedMealPlan}

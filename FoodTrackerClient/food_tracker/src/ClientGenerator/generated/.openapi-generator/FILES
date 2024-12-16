@@ -1,0 +1,10 @@
+.openapi-generator-ignore
+apis/MealTrackerApi.ts
+apis/index.ts
+index.ts
+models/FoodItem.ts
+models/Meal.ts
+models/MealPlan.ts
+models/UserHealth.ts
+models/index.ts
+runtime.ts
