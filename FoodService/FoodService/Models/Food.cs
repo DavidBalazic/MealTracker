@@ -25,7 +25,10 @@ namespace FoodService.Models
         public double Fat { get; set; }
 
         [BsonElement("servingSize")]
-        public string ServingSize { get; set; }
+        public int ServingSize { get; set; }
+
+        [BsonElement("unit")]
+        public string Unit { get; set; }
 
         [BsonElement("unit")] // Add this property
         public string Unit { get; set; } // Ensure it's a string like in your MongoDB documents
