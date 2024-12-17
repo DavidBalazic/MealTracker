@@ -1,10 +1,17 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using RecipeService.Models;
 using RecipeService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddHttpClient<FoodService>((serviceProvider, client) =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var baseAddress = configuration["Services:FoodService:BaseAddress"];
+    client.BaseAddress = new Uri(baseAddress);
+});
 builder.Services.Configure<RecipeServiceDatabaseSettings>(options =>
 {
     options.ConnectionString = builder.Configuration["MongoDB:ConnectionString"];

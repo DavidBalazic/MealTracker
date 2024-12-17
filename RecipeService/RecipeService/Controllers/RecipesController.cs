@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RecipeService.Dtos;
+using RecipeService.Integration;
 using RecipeService.Models;
 using RecipeService.Services;
+using System.Runtime.InteropServices;
 
 namespace RecipeService.Controllers
 {
@@ -9,10 +12,12 @@ namespace RecipeService.Controllers
     public class RecipesController : ControllerBase
     {
         private readonly RecipesService _recipeService;
+        private readonly FoodService _foodService;
 
-        public RecipesController(RecipesService recipeService)
+        public RecipesController(RecipesService recipeService, FoodService foodService)
         {
             _recipeService = recipeService;
+            _foodService = foodService;
         }
 
         [HttpGet]
@@ -27,10 +32,32 @@ namespace RecipeService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] Recipe recipe)
+        public async Task<ActionResult> Post([FromBody] RecipeRequest recipeRequest)
         {
+            var recipe = new Recipe
+            {
+                Name = recipeRequest.Name,
+                Ingredients = recipeRequest.Ingredients,
+                TotalNutrition = new Nutrition(),
+                Servings = recipeRequest.Servings,
+                Instructions = recipeRequest.Instructions,
+                Tags = recipeRequest.Tags
+            };
+
+            foreach (var ingredientRequest in recipeRequest.Ingredients)
+            {
+                var food = await _foodService.GetFoodAsync(ingredientRequest.FoodId);
+                if (food == null) return BadRequest($"Food with ID {ingredientRequest.FoodId} not found.");
+
+                recipe.TotalNutrition.Calories += food.Calories * ingredientRequest.Quantity / food.ServingSize;
+                recipe.TotalNutrition.Protein += food.Protein * ingredientRequest.Quantity / food.ServingSize;
+                recipe.TotalNutrition.Carbohydrates += food.Carbohydrates * ingredientRequest.Quantity / food.ServingSize;
+                recipe.TotalNutrition.Fat += food.Fat * ingredientRequest.Quantity / food.ServingSize;
+            }
+
             await _recipeService.CreateAsync(recipe);
-            return CreatedAtAction(nameof(Get), new { id = recipe.Id.ToString() }, recipe);
+
+            return CreatedAtAction(nameof(Get), new { id = recipe.Id }, recipe);
         }
 
         [HttpPut("{id:length(24)}")]
