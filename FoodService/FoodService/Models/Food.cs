@@ -25,7 +25,10 @@ namespace FoodService.Models
         public double Fat { get; set; }
 
         [BsonElement("servingSize")]
-        public string ServingSize { get; set; }
+        public int ServingSize { get; set; }
+
+        [BsonElement("unit")]
+        public string Unit { get; set; }
 
         [BsonElement("allergens")]
         public List<string> Allergens { get; set; }
