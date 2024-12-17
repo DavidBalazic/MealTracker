@@ -17,5 +17,14 @@ namespace RecipeService.Models
 
         [BsonElement("totalNutrition")]
         public Nutrition TotalNutrition { get; set; }
+
+        [BsonElement("servings")]
+        public int Servings { get; set; }
+
+        [BsonElement("instructions")]
+        public string Instructions { get; set; }
+
+        [BsonElement("tags")]
+        public List<string> Tags { get; set; }
     }
 }
