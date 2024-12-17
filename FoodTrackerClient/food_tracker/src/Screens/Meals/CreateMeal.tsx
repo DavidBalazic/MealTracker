@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Button } from "../../Components/ui/button";
 import {
   Dialog,
   DialogTrigger,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogFooter,
 } from "../../Components/ui/dialog";
-import { Button } from "../../Components/ui/button";
-import { Input } from "../../Components/ui/input";
-import api from "../../lib/axios";
+import { mealTrackerApi } from "../../lib/axios";
+import {
+  MealPlan,
+  Meal,
+  Food,
+} from "../../ClientGenerator/generated/MealTrackerClient/models";
 import { ObjectId } from "bson";
 
 interface CreateMealProps {
@@ -19,100 +21,116 @@ interface CreateMealProps {
 }
 
 const CreateMeal: React.FC<CreateMealProps> = ({ onMealPlanCreated }) => {
-  const [open, setOpen] = useState(false);
-  const [mealPlanDate, setMealPlanDate] = useState<Date | null>(null);
-  const [meals, setMeals] = useState([
+  const [open, setOpen] = useState<boolean>(false);
+  const [mealPlanDate, setMealPlanDate] = useState<Date | null>(new Date());
+  const [meals, setMeals] = useState<Meal[]>([
     {
       id: new ObjectId().toHexString(),
       name: "",
-      foodItems: [{ id: new ObjectId().toHexString(), name: "", calories: 0 }],
+      foods: [],
+      foodIds: [],
+      calories: 0,
     },
   ]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
+  // Add a new food to a meal
+  const handleAddFood = (mealIndex: number) => {
+    const newFood: Food = {
+      id: new ObjectId().toHexString(),
+      name: "",
+      calories: 0,
+      protein: 0,
+      carbohydrates: 0,
+      fat: 0,
+      servingSize: "",
+      unit: "",
+      allergens: [],
+    };
+
+    setMeals((prevMeals) => {
+      const updatedMeals = [...prevMeals];
+      updatedMeals[mealIndex].foods = [
+        ...(updatedMeals[mealIndex].foods ?? []),
+        newFood,
+      ];
+      updatedMeals[mealIndex].foodIds = [
+        ...(updatedMeals[mealIndex].foodIds ?? []).filter(
+          (id): id is string => id != null
+        ),
+        newFood.id!,
+      ];
+      return updatedMeals;
+    });
+  };
+
+  // Add a new allergen to a food
+  const handleAddAllergen = (mealIndex: number, foodIndex: number) => {
+    setMeals((prevMeals) => {
+      const updatedMeals = [...prevMeals];
+      const food = updatedMeals[mealIndex].foods?.[foodIndex];
+      if (food) {
+        food.allergens = [...(food.allergens || []), ""];
+      }
+      return updatedMeals;
+    });
+  };
+
+  // Handle changes to food inputs
+  const handleFoodChange = (
+    mealIndex: number,
+    foodIndex: number,
+    field: keyof Food,
+    value: any
+  ) => {
+    setMeals((prevMeals) => {
+      const updatedMeals = [...prevMeals];
+      const food = {
+        ...(updatedMeals[mealIndex].foods?.[foodIndex] ?? {}),
+        [field]: value,
+      };
+      updatedMeals[mealIndex].foods![foodIndex] = food;
+      return updatedMeals;
+    });
+  };
+
+  // Add a new meal
   const handleAddMeal = () => {
     setMeals([
       ...meals,
       {
         id: new ObjectId().toHexString(),
         name: "",
-        foodItems: [
-          { id: new ObjectId().toHexString(), name: "", calories: 0 },
-        ],
+        foods: [],
+        foodIds: [],
+        calories: 0,
       },
     ]);
   };
 
-  const handleMealChange = (
-    mealIndex: number,
-    field: "name" | "foodItems",
-    value: any
-  ) => {
-    const updatedMeals = [...meals];
-    if (field === "name") {
-      updatedMeals[mealIndex].name = value;
-    } else if (field === "foodItems") {
-      updatedMeals[mealIndex].foodItems = value;
-    }
-    setMeals(updatedMeals);
-  };
-
-  const handleAddFoodItem = (mealIndex: number) => {
-    const updatedMeals = [...meals];
-    updatedMeals[mealIndex].foodItems.push({
-      id: new ObjectId().toHexString(),
-      name: "",
-      calories: 0,
-    });
-    setMeals(updatedMeals);
-  };
-
-  const handleFoodItemChange = (
-    mealIndex: number,
-    foodItemIndex: number,
-    field: "name" | "calories",
-    value: any
-  ) => {
-    const updatedMeals = [...meals];
-    updatedMeals[mealIndex].foodItems[foodItemIndex] = {
-      ...updatedMeals[mealIndex].foodItems[foodItemIndex],
-      [field]: value,
-    };
-    setMeals(updatedMeals);
-  };
-
+  // Create Meal Plan
   const handleCreateMealPlan = async () => {
-    if (!mealPlanDate || meals.some((meal) => meal.name.trim() === "")) {
-      alert("Please fill out all required fields.");
-      return;
-    }
-
-    const mealPlan = {
+    const newMealPlan: MealPlan = {
       id: new ObjectId().toHexString(),
-      date: mealPlanDate.toISOString(),
+      date: mealPlanDate || new Date(),
       meals: meals.map((meal) => ({
-        ...meal,
-        foodItems: meal.foodItems.filter((item) => item.name.trim() !== ""),
-        calories: meal.foodItems.reduce((sum, item) => sum + item.calories, 0),
+        id: meal.id,
+        name: meal.name,
+        foodIds: meal.foods?.map((food) => food.id!) || [],
+        foods: meal.foods,
+        calories:
+          meal.foods?.reduce((sum, food) => sum + (food.calories || 0), 0) || 0,
       })),
     };
 
     try {
       setLoading(true);
-      await api.post("/mealtracker/mealplan", mealPlan);
+      await mealTrackerApi.apiMealTrackerMealplanPost({
+        mealPlan: newMealPlan,
+      });
       alert("Meal plan created successfully!");
-      setOpen(false);
-      setMealPlanDate(null);
-      setMeals([
-        {
-          id: new ObjectId().toHexString(),
-          name: "",
-          foodItems: [
-            { id: new ObjectId().toHexString(), name: "", calories: 0 },
-          ],
-        },
-      ]);
       await onMealPlanCreated();
+      setOpen(false);
     } catch (error) {
       console.error("Failed to create meal plan", error);
       alert("Failed to create meal plan.");
@@ -122,123 +140,175 @@ const CreateMeal: React.FC<CreateMealProps> = ({ onMealPlanCreated }) => {
   };
 
   return (
-    <div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button className="bg-black text-white hover:bg-gray-800 px-4 py-2 rounded-md">
-            Create Meal Plan
-          </Button>
-        </DialogTrigger>
-        <DialogContent
-          className="max-h-[90vh] w-[90%] overflow-hidden rounded-lg shadow-md"
-          style={{ display: "flex", flexDirection: "column" }}
-        >
-          <DialogHeader>
-            <DialogTitle>Create New Meal Plan</DialogTitle>
-          </DialogHeader>
-          <div className="overflow-y-auto flex-grow p-4 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Date
-              </label>
-              <DatePicker
-                selected={mealPlanDate}
-                onChange={(date: Date | null) => setMealPlanDate(date)}
-                className="w-full border border-gray-300 rounded-md p-2"
-                dateFormat="yyyy-MM-dd"
-                placeholderText="Select a date"
-              />
-            </div>
-            {meals.map((meal, mealIndex) => (
-              <div
-                key={meal.id}
-                className="p-4 border border-gray-200 rounded-md space-y-4"
-              >
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Meal Name
-                  </label>
-                  <Input
-                    placeholder="Enter meal name"
-                    value={meal.name}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>Create New Meal Plan</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <h2 className="text-xl font-bold mb-4">Create New Meal Plan</h2>
+        <div>
+          <label>Select Date</label>
+          <DatePicker
+            selected={mealPlanDate}
+            onChange={(date) => setMealPlanDate(date)}
+            className="w-full border p-2 rounded"
+            dateFormat="yyyy-MM-dd"
+          />
+        </div>
+
+        {meals.map((meal, mealIndex) => (
+          <div key={meal.id} className="p-4 border rounded mb-4">
+            <label>Meal Name</label>
+            <input
+              type="text"
+              value={meal.name || ""}
+              onChange={(e) =>
+                setMeals((prevMeals) => {
+                  const updatedMeals = [...prevMeals];
+                  updatedMeals[mealIndex].name = e.target.value;
+                  return updatedMeals;
+                })
+              }
+              className="w-full border p-2 rounded mb-2"
+            />
+
+            {(meal.foods || []).map((food, foodIndex) => (
+              <div key={food.id} className="mb-2 p-2 border rounded">
+                <label>Food Name</label>
+                <input
+                  type="text"
+                  value={food.name || ""}
+                  onChange={(e) =>
+                    handleFoodChange(
+                      mealIndex,
+                      foodIndex,
+                      "name",
+                      e.target.value
+                    )
+                  }
+                  className="w-full border p-2 rounded"
+                />
+                <label>Calories</label>
+                <input
+                  type="number"
+                  value={food.calories || 0}
+                  onChange={(e) =>
+                    handleFoodChange(
+                      mealIndex,
+                      foodIndex,
+                      "calories",
+                      Number(e.target.value)
+                    )
+                  }
+                  className="w-full border p-2 rounded"
+                />
+                <label>Protein</label>
+                <input
+                  type="number"
+                  value={food.protein || 0}
+                  onChange={(e) =>
+                    handleFoodChange(
+                      mealIndex,
+                      foodIndex,
+                      "protein",
+                      Number(e.target.value)
+                    )
+                  }
+                  className="w-full border p-2 rounded"
+                />
+                <label>Carbohydrates</label>
+                <input
+                  type="number"
+                  value={food.carbohydrates || 0}
+                  onChange={(e) =>
+                    handleFoodChange(
+                      mealIndex,
+                      foodIndex,
+                      "carbohydrates",
+                      Number(e.target.value)
+                    )
+                  }
+                  className="w-full border p-2 rounded"
+                />
+                <label>Fat</label>
+                <input
+                  type="number"
+                  value={food.fat || 0}
+                  onChange={(e) =>
+                    handleFoodChange(
+                      mealIndex,
+                      foodIndex,
+                      "fat",
+                      Number(e.target.value)
+                    )
+                  }
+                  className="w-full border p-2 rounded"
+                />
+                <label>Serving Size</label>
+                <input
+                  type="text"
+                  value={food.servingSize || ""}
+                  onChange={(e) =>
+                    handleFoodChange(
+                      mealIndex,
+                      foodIndex,
+                      "servingSize",
+                      e.target.value
+                    )
+                  }
+                  className="w-full border p-2 rounded"
+                />
+                <label>Unit</label>
+                <input
+                  type="text"
+                  value={food.unit || ""}
+                  onChange={(e) =>
+                    handleFoodChange(
+                      mealIndex,
+                      foodIndex,
+                      "unit",
+                      e.target.value
+                    )
+                  }
+                  className="w-full border p-2 rounded"
+                />
+                {/* Add Allergen Button */}
+                <label>Allergens</label>
+                {food.allergens?.map((allergen, allergenIndex) => (
+                  <input
+                    key={allergenIndex}
+                    type="text"
+                    value={allergen || ""}
                     onChange={(e) =>
-                      handleMealChange(mealIndex, "name", e.target.value)
+                      handleFoodChange(mealIndex, foodIndex, "allergens", [
+                        ...(food.allergens?.slice(0, allergenIndex) || []),
+                        e.target.value,
+                        ...(food.allergens?.slice(allergenIndex + 1) || []),
+                      ])
                     }
+                    className="w-full border p-2 rounded mb-2"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Food Items
-                  </label>
-                  {meal.foodItems.map((item, foodItemIndex) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center space-x-4 mb-2"
-                    >
-                      <Input
-                        placeholder="Food name"
-                        value={item.name}
-                        onChange={(e) =>
-                          handleFoodItemChange(
-                            mealIndex,
-                            foodItemIndex,
-                            "name",
-                            e.target.value
-                          )
-                        }
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Calories"
-                        value={item.calories}
-                        onChange={(e) =>
-                          handleFoodItemChange(
-                            mealIndex,
-                            foodItemIndex,
-                            "calories",
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                      />
-                    </div>
-                  ))}
-                  <Button
-                    variant="secondary"
-                    onClick={() => handleAddFoodItem(mealIndex)}
-                    className="mt-2 bg-gray-300 text-black hover:bg-gray-400"
-                  >
-                    Add Food Item
-                  </Button>
-                </div>
+                ))}
+                <Button onClick={() => handleAddAllergen(mealIndex, foodIndex)}>
+                  Add Allergen
+                </Button>
               </div>
             ))}
-            <Button
-              variant="secondary"
-              onClick={handleAddMeal}
-              className="w-full mt-4 bg-gray-300 text-black hover:bg-gray-400"
-            >
-              Add Another Meal
-            </Button>
+            <Button onClick={() => handleAddFood(mealIndex)}>Add Food</Button>
           </div>
-          <DialogFooter className="p-4">
-            <Button
-              onClick={() => setOpen(false)}
-              variant="secondary"
-              className="bg-gray-300 text-black hover:bg-gray-400"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateMealPlan}
-              className="bg-black text-white hover:bg-gray-800"
-              disabled={loading}
-            >
-              {loading ? "Creating..." : "Create Meal Plan"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        ))}
+
+        <Button onClick={handleAddMeal}>Add Meal</Button>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleCreateMealPlan} disabled={loading}>
+            {loading ? "Creating..." : "Create"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
