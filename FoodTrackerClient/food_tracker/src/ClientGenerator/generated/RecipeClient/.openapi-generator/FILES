@@ -1,0 +1,10 @@
+.openapi-generator-ignore
+apis/RecipesApi.ts
+apis/index.ts
+index.ts
+models/Ingredient.ts
+models/Nutrition.ts
+models/Recipe.ts
+models/RecipeRequest.ts
+models/index.ts
+runtime.ts

@@ -10,6 +10,7 @@ import Navigation from "./Components/Navigation/Navigation";
 import Home from "src/Screens/Home/Home";
 import Dashboard from "src/Screens/Dashboard/Dashboard";
 import Meals from "src/Screens/Meals/Meals";
+import Recipes from "src/Screens/Recipes/Recipes";
 import Signin from "src/Screens/Signin/Signin";
 import Signup from "src/Screens/Signin/Signup";
 import Footer from "./Components/Footer/Footer";
@@ -37,6 +38,7 @@ function App() {
               path="/meals"
               element={<Meals onMealPlanCreated={handleMealPlanCreated} />}
             />
+            <Route path="/recipes" element={<Recipes />} />
             <Route path="/about" element={<About />} />
             <Route
               path="/signin"

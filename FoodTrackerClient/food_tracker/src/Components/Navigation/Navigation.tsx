@@ -37,6 +37,14 @@ const Navigation: React.FC = () => {
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink
+              href="/recipes"
+              className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
+            >
+              Recipes
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuLink
               href="/about"
               className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
             >
