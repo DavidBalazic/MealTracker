@@ -26,16 +26,10 @@ namespace FoodService.Models
 
         [BsonElement("servingSize")]
         public int ServingSize { get; set; }
-<<<<<<< Updated upstream
 
         [BsonElement("unit")]
         public string Unit { get; set; }
-=======
         
-        [BsonElement("unit")] // Add this property
-        public string Unit { get; set; } // Ensure it's a string like in your MongoDB documents
->>>>>>> Stashed changes
-
         [BsonElement("allergens")]
         public List<string> Allergens { get; set; }
     }
