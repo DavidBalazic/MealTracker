@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  usercontroller:
+    image: ${DOCKER_REGISTRY-}usercontroller
+    build:
+      context: .
+      dockerfile: Presentation/UserController/Dockerfile
