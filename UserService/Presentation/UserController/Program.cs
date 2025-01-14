@@ -3,66 +3,90 @@ using UserServices.Impl.Models;
 using UserServices.Impl.Implementation;
 using UserServices.Impl.Interfaces;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Options;
 
 internal class Program
 {
-  private static void Main(string[] args)
-  {
-    var builder = WebApplication.CreateBuilder(args);
-
-    // Configure services
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen(options =>
+    private static void Main(string[] args)
     {
-      options.SwaggerDoc("v1", new OpenApiInfo
-      {
-        Version = "v1",
-        Title = "User Service API",
-        Description = "An API for managing users, authentication, and sessions"
-      });
+        var builder = WebApplication.CreateBuilder(args);
 
-      options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-      {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter 'Bearer' [space] and then your valid token in the text input below."
-      });
+        // Configure services
+        builder.Services.AddControllers();
 
-      options.AddSecurityRequirement(new OpenApiSecurityRequirement
-      {
+        // Configure Swagger for API documentation
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(options =>
         {
-          new OpenApiSecurityScheme
-          {
-            Reference = new OpenApiReference
+            options.SwaggerDoc("v1", new OpenApiInfo
             {
-              Type = ReferenceType.SecurityScheme,
-              Id = "Bearer"
+                Version = "v1",
+                Title = "User Service API",
+                Description = "An API for managing users, authentication, and sessions"
+            });
+
+            // Add Bearer token authentication for Swagger
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter 'Bearer' [space] and then your valid token in the text input below."
+            });
+
+            // Require Bearer token for secured endpoints
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[] {}
+                }
+            });
+        });
+
+        // Bind MongoDB settings from configuration
+        builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDB"));
+
+        // Register MongoClient with DI
+        builder.Services.AddSingleton<IMongoClient>(sp =>
+        {
+            var mongoDbSettings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+
+            // Ensure connection string is valid
+            if (string.IsNullOrEmpty(mongoDbSettings.ConnectionString))
+            {
+                throw new ArgumentNullException(nameof(mongoDbSettings.ConnectionString), "MongoDB connection string is not configured properly in appsettings.json.");
             }
-          },
-          new string[] {}
-        }
-      });
-    });
-    builder.Services.AddSingleton<IMongoClient, MongoClient>(sp =>
-    {
-      var configuration = sp.GetRequiredService<IConfiguration>();
-      var connectionString = configuration["MongoDB:ConnectionString"];
-      return new MongoClient(connectionString);
-    });
 
-    builder.Services.AddSingleton<IUserService, UserService>();
-    builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+            return new MongoClient(mongoDbSettings.ConnectionString);
+        });
 
-    var app = builder.Build();
+        // Register UserService with DI
+        builder.Services.AddSingleton<IUserService, UserService>();
 
-    // Configure middleware
-    app.UseAuthorization();
-    app.MapControllers();
+        // Configure JWT settings
+        builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
-    app.Run();
-  }
+        var app = builder.Build();
+
+        // Enable Swagger for development and testing
+        app.UseSwagger();
+        app.UseSwaggerUI();
+
+        // Configure middleware
+        app.UseAuthorization();    // Add authorization middleware
+        app.MapControllers();      // Map controller endpoints
+
+        // Run the application
+        app.Run();
+    }
 }
