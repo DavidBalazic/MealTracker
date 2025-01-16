@@ -1,65 +1,86 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   NavigationMenu,
   NavigationMenuList,
   NavigationMenuItem,
-  NavigationMenuLink,
 } from "../ui/navigation-menu";
 
-const Navigation: React.FC = () => {
+interface NavigationProps {
+  isAuthenticated: boolean;
+  onSignOut: () => void;
+}
+
+const Navigation: React.FC<NavigationProps> = ({
+  isAuthenticated,
+  onSignOut,
+}) => {
   return (
     <NavigationMenu className="w-full bg-white text-black">
       <div className="container mx-auto flex justify-between items-center p-2">
         <NavigationMenuList className="flex space-x-6">
           <NavigationMenuItem>
-            <NavigationMenuLink
-              href="/home"
+            <Link
+              to="/home"
               className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
             >
               Home
-            </NavigationMenuLink>
+            </Link>
           </NavigationMenuItem>
+          {isAuthenticated && (
+            <>
+              <NavigationMenuItem>
+                <Link
+                  to="/dashboard"
+                  className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
+                >
+                  Dashboard
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link
+                  to="/meals"
+                  className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
+                >
+                  Meals
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link
+                  to="/recipes"
+                  className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
+                >
+                  Recipes
+                </Link>
+              </NavigationMenuItem>
+            </>
+          )}
           <NavigationMenuItem>
-            <NavigationMenuLink
-              href="/dashboard"
-              className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
-            >
-              Dashboard
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuLink
-              href="/meals"
-              className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
-            >
-              Meals
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuLink
-              href="/recipes"
-              className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
-            >
-              Recipes
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuLink
-              href="/about"
+            <Link
+              to="/about"
               className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
             >
               About
-            </NavigationMenuLink>
+            </Link>
           </NavigationMenuItem>
         </NavigationMenuList>
         <NavigationMenuList>
           <NavigationMenuItem>
-            <NavigationMenuLink
-              href="/signin"
-              className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
-            >
-              Sign In
-            </NavigationMenuLink>
+            {isAuthenticated ? (
+              <button
+                onClick={onSignOut}
+                className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                to="/signin"
+                className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
+              >
+                Sign In
+              </Link>
+            )}
           </NavigationMenuItem>
         </NavigationMenuList>
       </div>

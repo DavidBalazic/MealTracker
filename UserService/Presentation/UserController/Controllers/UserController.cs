@@ -35,11 +35,26 @@ namespace UserController.Controllers
     {
       try
       {
+        if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+        {
+          throw new ArgumentException("Email and password are required.");
+        }
+
+        Console.WriteLine($"Login attempt for email: {request.Email}");
+
         var token = await _userService.LoginUserAsync(request);
+
+        if (string.IsNullOrEmpty(token))
+        {
+          throw new Exception("Token generation failed.");
+        }
+
+        Console.WriteLine($"Login successful, token generated for email: {request.Email}");
         return Ok(new { Token = token });
       }
       catch (Exception ex)
       {
+        Console.WriteLine($"Login error: {ex.Message}");
         return Unauthorized(new { Error = ex.Message });
       }
     }

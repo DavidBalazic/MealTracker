@@ -1,5 +1,4 @@
-import React from "react";
-import "./App.css";
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -15,38 +14,101 @@ import Signin from "src/Screens/Signin/Signin";
 import Signup from "src/Screens/Signin/Signup";
 import Footer from "./Components/Footer/Footer";
 import About from "src/Screens/About/About";
+import { userApi } from "./lib/axios";
 
 function App() {
-  const handleSignin = () => {
-    console.log("Signed in");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Handle loading state
+
+  useEffect(() => {
+    const validateToken = async () => {
+      const token = sessionStorage.getItem("authToken");
+      if (token) {
+        try {
+          await userApi.apiUsersValidateTokenPostRaw({ body: token });
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error("Token validation failed:", error);
+          sessionStorage.removeItem("authToken");
+          setIsAuthenticated(false);
+        }
+      }
+      setIsLoading(false); // Token validation complete
+    };
+    validateToken();
+  }, []);
+
+  const handleSignin = (token: string) => {
+    sessionStorage.setItem("authToken", token);
+    setIsAuthenticated(true);
   };
 
-  const handleMealPlanCreated = async () => {
-    console.log("Meal plan created successfully!");
+  const handleSignOut = () => {
+    sessionStorage.removeItem("authToken");
+    setIsAuthenticated(false);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Show a loading indicator while validating
+  }
 
   return (
     <Router>
       <div className="flex flex-col min-h-screen bg-gray-100">
-        <Navigation />
+        <Navigation
+          isAuthenticated={isAuthenticated}
+          onSignOut={handleSignOut}
+        />
         <div className="flex flex-col items-center justify-center flex-grow">
           <Routes>
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route
-              path="/meals"
-              element={<Meals onMealPlanCreated={handleMealPlanCreated} />}
-            />
-            <Route path="/recipes" element={<Recipes />} />
             <Route path="/about" element={<About />} />
             <Route
               path="/signin"
-              element={<Signin onSignin={handleSignin} />}
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Signin onSignin={handleSignin} />
+                )
+              }
             />
             <Route
               path="/signup"
-              element={<Signup onSignin={handleSignin} />}
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Signup />
+                )
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                isAuthenticated ? (
+                  <Dashboard />
+                ) : (
+                  <Navigate to="/signin" replace />
+                )
+              }
+            />
+            <Route
+              path="/meals"
+              element={
+                isAuthenticated ? <Meals /> : <Navigate to="/signin" replace />
+              }
+            />
+            <Route
+              path="/recipes"
+              element={
+                isAuthenticated ? (
+                  <Recipes />
+                ) : (
+                  <Navigate to="/signin" replace />
+                )
+              }
             />
           </Routes>
         </div>

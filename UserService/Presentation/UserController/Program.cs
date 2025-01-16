@@ -14,6 +14,17 @@ internal class Program
         // Configure services
         builder.Services.AddControllers();
 
+        // Configure CORS
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowSpecificOrigins", policy =>
+            {
+                policy.WithOrigins("http://localhost:3000") // Allow requests from the frontend
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            });
+        });
+
         // Configure Swagger for API documentation
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -81,6 +92,9 @@ internal class Program
         // Enable Swagger for development and testing
         app.UseSwagger();
         app.UseSwaggerUI();
+
+        // Use CORS middleware
+        app.UseCors("AllowSpecificOrigins");
 
         // Configure middleware
         app.UseAuthorization();    // Add authorization middleware
