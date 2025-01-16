@@ -8,9 +8,7 @@
   "paths": {
     "/api/Users/register": {
       "post": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -39,9 +37,7 @@
     },
     "/api/Users/login": {
       "post": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -70,9 +66,7 @@
     },
     "/api/Users/update": {
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -101,9 +95,7 @@
     },
     "/api/Users/validate-token": {
       "post": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -123,6 +115,26 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Users/admin-only": {
+      "get": {
+        "tags": ["Users"],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Users/user-info": {
+      "get": {
+        "tags": ["Users"],
         "responses": {
           "200": {
             "description": "Success"
@@ -191,7 +203,7 @@
   },
   "security": [
     {
-      "Bearer": [ ]
+      "Bearer": []
     }
   ]
 }

@@ -51,6 +51,37 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      */
+    async apiUsersAdminOnlyGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Users/admin-only`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async apiUsersAdminOnlyGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiUsersAdminOnlyGetRaw(initOverrides);
+    }
+
+    /**
+     */
     async apiUsersLoginPostRaw(requestParameters: ApiUsersLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
@@ -149,6 +180,37 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async apiUsersUpdatePut(requestParameters: ApiUsersUpdatePutRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.apiUsersUpdatePutRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     */
+    async apiUsersUserInfoGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Users/user-info`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async apiUsersUserInfoGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiUsersUserInfoGetRaw(initOverrides);
     }
 
     /**

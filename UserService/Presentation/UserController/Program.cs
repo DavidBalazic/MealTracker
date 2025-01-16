@@ -4,6 +4,9 @@ using UserServices.Impl.Implementation;
 using UserServices.Impl.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 internal class Program
 {
@@ -87,6 +90,21 @@ internal class Program
         // Configure JWT settings
         builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
+        // Configure JWT authentication
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JwtSettings:Secret"]!)),
+                    ValidateIssuer = true,
+                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                    ValidateAudience = false, // Optional: Can add audience validation if needed
+                    ClockSkew = TimeSpan.Zero // Eliminate token expiry grace period
+                };
+            });
+
         var app = builder.Build();
 
         // Enable Swagger for development and testing
@@ -97,8 +115,11 @@ internal class Program
         app.UseCors("AllowSpecificOrigins");
 
         // Configure middleware
-        app.UseAuthorization();    // Add authorization middleware
-        app.MapControllers();      // Map controller endpoints
+        app.UseAuthentication(); // Add authentication middleware
+        app.UseAuthorization();  // Add authorization middleware
+
+        // Map controller endpoints
+        app.MapControllers();
 
         // Run the application
         app.Run();

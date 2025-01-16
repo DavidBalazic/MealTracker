@@ -38,12 +38,13 @@ namespace UserServices.Impl.Implementation
                 throw new Exception("User already exists.");
             }
 
-            // Hash the password and create a new user
+            // Hash the password and create a new user with a default role
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
             var newUser = new UserModel
             {
                 Email = registerDto.Email,
-                PasswordHash = passwordHash
+                PasswordHash = passwordHash,
+                Role = "user" // Assign default role
             };
 
             // Save user to database
@@ -51,7 +52,8 @@ namespace UserServices.Impl.Implementation
 
             Console.WriteLine($"User registered successfully: {newUser.Email}");
 
-            return newUser.Id;
+            // Generate and return a token
+            return GenerateJwtToken(newUser);
         }
 
         public async Task<string> LoginUserAsync(LoginDTO loginDto)
@@ -82,7 +84,7 @@ namespace UserServices.Impl.Implementation
 
             Console.WriteLine($"User authenticated successfully for email: {loginDto.Email}");
 
-            // Generate JWT token
+            // Generate and return a token
             return GenerateJwtToken(user);
         }
 
@@ -142,7 +144,8 @@ namespace UserServices.Impl.Implementation
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
+                    ValidateIssuer = true,
+                    ValidIssuer = _jwtSettings.Issuer,
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
@@ -160,23 +163,27 @@ namespace UserServices.Impl.Implementation
         private string GenerateJwtToken(UserModel user)
         {
             // Validate user data
-            if (string.IsNullOrEmpty(user.Id) || string.IsNullOrEmpty(user.Email))
+            if (string.IsNullOrEmpty(user.Id) || string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.Role))
             {
-                throw new ArgumentException("User ID and email are required to generate a token.");
+                throw new ArgumentException("User ID, email, and role are required to generate a token.");
             }
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret!);
 
-            // Configure token descriptor
+            // Configure token descriptor with all required claims
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Email, user.Email)
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id),       // User identifier
+                    new Claim(ClaimTypes.Email, user.Email),               // Store email under ClaimTypes.Email
+                    new Claim(ClaimTypes.Role, user.Role),                 // User's role
+                    new Claim(JwtRegisteredClaimNames.Iat, 
+                        DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64) // Issued at
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
+                Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes), // Expiry time
+                Issuer = _jwtSettings.Issuer,                                           // Issuer
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
