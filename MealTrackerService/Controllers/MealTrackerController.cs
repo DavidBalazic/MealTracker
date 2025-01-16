@@ -2,13 +2,16 @@
 using MealTrackerService.Data;
 using MealTrackerService.Models;
 using MongoDB.Driver;
-using MongoDB.Bson; 
+using MongoDB.Bson;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodServiceClient;
 
 namespace MealTrackerService.Controllers
 {
+    /// <summary>
+    /// Controller for managing meal plans, meals, and food items.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class MealTrackerController : ControllerBase
@@ -16,16 +19,26 @@ namespace MealTrackerService.Controllers
         private readonly IMealTrackerContext _context;
         private readonly FoodServiceClient.FoodServiceClient _foodServiceClient;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MealTrackerController"/> class.
+        /// </summary>
+        /// <param name="context">Database context for meal tracking.</param>
+        /// <param name="foodServiceClient">Client for interacting with the Food Service.</param>
         public MealTrackerController(IMealTrackerContext context, FoodServiceClient.FoodServiceClient foodServiceClient)
         {
             _context = context;
             _foodServiceClient = foodServiceClient;
         }
 
+        /// <summary>
+        /// Retrieves all meal plans, including detailed food information for each meal.
+        /// </summary>
+        /// <returns>A list of all meal plans with detailed information.</returns>
+        /// <response code="200">Returns the list of meal plans.</response>
+        /// <response code="500">Internal server error.</response>
         [HttpGet("mealplans")]
         public async Task<IActionResult> GetMealPlans()
         {
-            // Fetch all meal plans from the database
             var mealPlans = await _context.MealPlans.Find(_ => true).ToListAsync();
 
             foreach (var mealPlan in mealPlans)
@@ -38,7 +51,6 @@ namespace MealTrackerService.Controllers
                     {
                         try
                         {
-                            // Attempt to fetch food details for each FoodId
                             var food = await _foodServiceClient.FoodsGETAsync(foodId);
                             if (food != null)
                             {
@@ -47,25 +59,30 @@ namespace MealTrackerService.Controllers
                         }
                         catch (ApiException ex) when (ex.StatusCode == 404)
                         {
-                            // Gracefully handle the case where a food is not found
                             continue;
                         }
                         catch (Exception ex)
                         {
-                            // Log other unexpected exceptions for debugging
                             Console.WriteLine($"Error fetching food with ID {foodId}: {ex.Message}");
                         }
                     }
 
-                    // Update the Foods property with the retrieved details
                     meal.Foods = foodDetails;
                 }
             }
 
             return Ok(mealPlans);
         }
-        
-        // PUT: api/mealtracker/mealplan/{id}
+
+        /// <summary>
+        /// Updates an existing meal plan.
+        /// </summary>
+        /// <param name="id">The ID of the meal plan to update.</param>
+        /// <param name="updatedMealPlan">The updated meal plan object.</param>
+        /// <returns>The updated meal plan.</returns>
+        /// <response code="200">Returns the updated meal plan.</response>
+        /// <response code="400">Bad request, e.g., invalid meal plan data.</response>
+        /// <response code="404">Meal plan not found.</response>
         [HttpPut("mealplan/{id}")]
         public async Task<IActionResult> UpdateMealPlan(string id, [FromBody] MealPlan updatedMealPlan)
         {
@@ -79,14 +96,12 @@ namespace MealTrackerService.Controllers
                 return BadRequest("ID in the URL does not match ID in the body.");
             }
 
-            // Check if the MealPlan with the given ID exists
             var existingMealPlan = await _context.MealPlans.Find(m => m.Id == id).FirstOrDefaultAsync();
             if (existingMealPlan == null)
             {
                 return NotFound($"MealPlan with id {id} does not exist.");
             }
 
-            // Validate and update each meal and its foods
             foreach (var meal in updatedMealPlan.Meals)
             {
                 var updatedFoodIds = new List<string>();
@@ -98,7 +113,6 @@ namespace MealTrackerService.Controllers
                         return BadRequest($"Food '{food.Name}' must have a valid 24-digit hex string ID.");
                     }
 
-                    // Ensure food exists and update it in the FoodService
                     var foodUpdated = await UpdateFoodIfExistsAsync(food);
                     if (!foodUpdated)
                     {
@@ -108,12 +122,10 @@ namespace MealTrackerService.Controllers
                     updatedFoodIds.Add(food.Id);
                 }
 
-                // Replace FoodIds and clear Foods to avoid duplication
                 meal.FoodIds = updatedFoodIds;
                 meal.Foods.Clear();
             }
 
-            // Update the MealPlan in the database
             var filter = Builders<MealPlan>.Filter.Eq(m => m.Id, id);
             var updateResult = await _context.MealPlans.ReplaceOneAsync(filter, updatedMealPlan);
 
@@ -124,7 +136,6 @@ namespace MealTrackerService.Controllers
 
             return Ok(updatedMealPlan);
         }
-
         private async Task<bool> UpdateFoodIfExistsAsync(Food food)
         {
             try
@@ -162,7 +173,13 @@ namespace MealTrackerService.Controllers
             return false;
         }
 
-        // POST: api/mealtracker/mealplan
+        /// <summary>
+        /// Creates a new meal plan.
+        /// </summary>
+        /// <param name="mealPlan">The meal plan to create.</param>
+        /// <returns>The created meal plan.</returns>
+        /// <response code="201">Meal plan successfully created.</response>
+        /// <response code="400">Bad request, e.g., invalid meal plan data.</response>
         [HttpPost("mealplan")]
         public async Task<IActionResult> CreateMealPlan([FromBody] MealPlan mealPlan)
         {
@@ -171,7 +188,6 @@ namespace MealTrackerService.Controllers
                 return BadRequest("MealPlan cannot be null.");
             }
 
-            // Process each meal and its foods
             foreach (var meal in mealPlan.Meals)
             {
                 var newFoodIds = new List<string>();
@@ -180,30 +196,23 @@ namespace MealTrackerService.Controllers
                 {
                     if (string.IsNullOrEmpty(food.Id) || !ObjectId.TryParse(food.Id, out _))
                     {
-                        // If ID is not valid, return a bad request
                         return BadRequest($"Food '{food.Name}' must have a valid 24-digit hex string ID.");
                     }
                     else
                     {
-                        // Add the food to the FoodService (ensure no duplicates)
                         await EnsureFoodInDatabaseAsync(food);
-
-                        // Add the specified Food ID to the list
                         newFoodIds.Add(food.Id);
                     }
                 }
 
-                // Replace the FoodIds list with the updated list (new or existing)
                 meal.FoodIds = newFoodIds;
-                meal.Foods.Clear(); // Optionally clear Foods, as IDs suffice
+                meal.Foods.Clear();
             }
 
-            // Insert the updated MealPlan into the MealPlan DB
             await _context.MealPlans.InsertOneAsync(mealPlan);
-
             return CreatedAtAction(nameof(GetMealPlans), new { id = mealPlan.Id }, mealPlan);
         }
-
+        
         private async Task EnsureFoodInDatabaseAsync(Food food)
         {
             try
@@ -252,8 +261,15 @@ namespace MealTrackerService.Controllers
                 throw;
             }
         }
-        
-        // DELETE: api/mealtracker/mealplan/{id}
+
+
+        /// <summary>
+        /// Deletes a meal plan by ID.
+        /// </summary>
+        /// <param name="id">The ID of the meal plan to delete.</param>
+        /// <returns>No content if successful.</returns>
+        /// <response code="204">Meal plan successfully deleted.</response>
+        /// <response code="404">Meal plan not found.</response>
         [HttpDelete("mealplan/{id}")]
         public async Task<IActionResult> DeleteMealPlan(string id)
         {
@@ -267,7 +283,11 @@ namespace MealTrackerService.Controllers
             return NoContent();
         }
 
-        // GET: api/mealtracker/foods
+        /// <summary>
+        /// Retrieves all foods from the Food Service.
+        /// </summary>
+        /// <returns>A list of all foods.</returns>
+        /// <response code="200">Returns a list of all foods.</response>
         [HttpGet("foods")]
         public async Task<IActionResult> GetAllFoods()
         {
@@ -275,7 +295,13 @@ namespace MealTrackerService.Controllers
             return Ok(foods);
         }
 
-        // GET: api/mealtracker/food/{id}
+        /// <summary>
+        /// Retrieves a food by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the food to retrieve.</param>
+        /// <returns>The food with the specified ID.</returns>
+        /// <response code="200">Returns the food details.</response>
+        /// <response code="404">Food not found.</response>
         [HttpGet("food/{id}")]
         public async Task<IActionResult> GetFoodById(string id)
         {
@@ -288,7 +314,13 @@ namespace MealTrackerService.Controllers
             return Ok(food);
         }
 
-        // GET: api/mealtracker/meal/{id}
+        /// <summary>
+        /// Retrieves a meal by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the meal to retrieve.</param>
+        /// <returns>The meal with the specified ID, including food details.</returns>
+        /// <response code="200">Returns the meal details.</response>
+        /// <response code="404">Meal not found.</response>
         [HttpGet("meal/{id}")]
         public async Task<IActionResult> GetMealById(string id)
         {
