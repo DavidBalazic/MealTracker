@@ -22,25 +22,25 @@ import {
 } from './Meal';
 
 /**
- * 
+ * Represents a meal plan, which includes meals scheduled for a specific date.
  * @export
  * @interface MealPlan
  */
 export interface MealPlan {
     /**
-     * 
+     * The unique identifier of the meal plan.
      * @type {string}
      * @memberof MealPlan
      */
     id?: string | null;
     /**
-     * 
+     * The date associated with the meal plan.
      * @type {Date}
      * @memberof MealPlan
      */
     date?: Date;
     /**
-     * 
+     * A list of meals included in the meal plan.
      * @type {Array<Meal>}
      * @memberof MealPlan
      */

@@ -12,25 +12,27 @@
   "paths": {
     "/api/MealTracker/mealplans": {
       "get": {
-        "tags": [
-          "MealTracker"
-        ],
+        "tags": ["MealTracker"],
+        "summary": "Retrieves all meal plans, including detailed food information for each meal.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Returns the list of meal plans."
+          },
+          "500": {
+            "description": "Internal server error."
           }
         }
       }
     },
     "/api/MealTracker/mealplan/{id}": {
       "put": {
-        "tags": [
-          "MealTracker"
-        ],
+        "tags": ["MealTracker"],
+        "summary": "Updates an existing meal plan.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "The ID of the meal plan to update.",
             "required": true,
             "schema": {
               "type": "string"
@@ -38,6 +40,7 @@
           }
         ],
         "requestBody": {
+          "description": "The updated meal plan object.",
           "content": {
             "application/json": {
               "schema": {
@@ -58,18 +61,24 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Returns the updated meal plan."
+          },
+          "400": {
+            "description": "Bad request, e.g., invalid meal plan data."
+          },
+          "404": {
+            "description": "Meal plan not found."
           }
         }
       },
       "delete": {
-        "tags": [
-          "MealTracker"
-        ],
+        "tags": ["MealTracker"],
+        "summary": "Deletes a meal plan by ID.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "The ID of the meal plan to delete.",
             "required": true,
             "schema": {
               "type": "string"
@@ -79,16 +88,22 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "204": {
+            "description": "Meal plan successfully deleted."
+          },
+          "404": {
+            "description": "Meal plan not found."
           }
         }
       }
     },
     "/api/MealTracker/mealplan": {
       "post": {
-        "tags": [
-          "MealTracker"
-        ],
+        "tags": ["MealTracker"],
+        "summary": "Creates a new meal plan.",
         "requestBody": {
+          "description": "The meal plan to create.",
           "content": {
             "application/json": {
               "schema": {
@@ -110,31 +125,36 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "201": {
+            "description": "Meal plan successfully created."
+          },
+          "400": {
+            "description": "Bad request, e.g., invalid meal plan data."
           }
         }
       }
     },
     "/api/MealTracker/foods": {
       "get": {
-        "tags": [
-          "MealTracker"
-        ],
+        "tags": ["MealTracker"],
+        "summary": "Retrieves all foods from the Food Service.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Returns a list of all foods."
           }
         }
       }
     },
     "/api/MealTracker/food/{id}": {
       "get": {
-        "tags": [
-          "MealTracker"
-        ],
+        "tags": ["MealTracker"],
+        "summary": "Retrieves a food by its ID.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "The ID of the food to retrieve.",
             "required": true,
             "schema": {
               "type": "string"
@@ -143,20 +163,23 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Returns the food details."
+          },
+          "404": {
+            "description": "Food not found."
           }
         }
       }
     },
     "/api/MealTracker/meal/{id}": {
       "get": {
-        "tags": [
-          "MealTracker"
-        ],
+        "tags": ["MealTracker"],
+        "summary": "Retrieves a meal by its ID.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "The ID of the meal to retrieve.",
             "required": true,
             "schema": {
               "type": "string"
@@ -165,7 +188,10 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Returns the meal details."
+          },
+          "404": {
+            "description": "Meal not found."
           }
         }
       }
@@ -255,10 +281,12 @@
         "properties": {
           "id": {
             "type": "string",
+            "description": "The unique identifier of the meal plan.",
             "nullable": true
           },
           "date": {
             "type": "string",
+            "description": "The date associated with the meal plan.",
             "format": "date-time"
           },
           "meals": {
@@ -266,10 +294,12 @@
             "items": {
               "$ref": "#/components/schemas/Meal"
             },
+            "description": "A list of meals included in the meal plan.",
             "nullable": true
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Represents a meal plan, which includes meals scheduled for a specific date."
       }
     }
   }

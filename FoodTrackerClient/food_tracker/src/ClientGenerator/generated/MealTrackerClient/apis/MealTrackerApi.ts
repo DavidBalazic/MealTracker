@@ -42,6 +42,7 @@ export interface ApiMealTrackerMealplanPostRequest {
  */
 export class MealTrackerApi extends runtime.BaseAPI {
   /**
+   * Retrieves a food by its ID.
    */
   async apiMealTrackerFoodIdGetRaw(
     requestParameters: ApiMealTrackerFoodIdGetRequest,
@@ -75,6 +76,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Retrieves a food by its ID.
    */
   async apiMealTrackerFoodIdGet(
     requestParameters: ApiMealTrackerFoodIdGetRequest,
@@ -84,6 +86,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Retrieves all foods from the Food Service.
    */
   async apiMealTrackerFoodsGetRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -106,6 +109,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Retrieves all foods from the Food Service.
    */
   async apiMealTrackerFoodsGet(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -114,6 +118,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Retrieves a meal by its ID.
    */
   async apiMealTrackerMealIdGetRaw(
     requestParameters: ApiMealTrackerMealIdGetRequest,
@@ -147,6 +152,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Retrieves a meal by its ID.
    */
   async apiMealTrackerMealIdGet(
     requestParameters: ApiMealTrackerMealIdGetRequest,
@@ -156,6 +162,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Deletes a meal plan by ID.
    */
   async apiMealTrackerMealplanIdDeleteRaw(
     requestParameters: ApiMealTrackerMealplanIdDeleteRequest,
@@ -189,6 +196,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Deletes a meal plan by ID.
    */
   async apiMealTrackerMealplanIdDelete(
     requestParameters: ApiMealTrackerMealplanIdDeleteRequest,
@@ -201,6 +209,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Updates an existing meal plan.
    */
   async apiMealTrackerMealplanIdPutRaw(
     requestParameters: ApiMealTrackerMealplanIdPutRequest,
@@ -237,6 +246,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Updates an existing meal plan.
    */
   async apiMealTrackerMealplanIdPut(
     requestParameters: ApiMealTrackerMealplanIdPutRequest,
@@ -246,6 +256,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Creates a new meal plan.
    */
   async apiMealTrackerMealplanPostRaw(
     requestParameters: ApiMealTrackerMealplanPostRequest,
@@ -272,6 +283,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Creates a new meal plan.
    */
   async apiMealTrackerMealplanPost(
     requestParameters: ApiMealTrackerMealplanPostRequest = {},
@@ -281,6 +293,7 @@ export class MealTrackerApi extends runtime.BaseAPI {
   }
 
   /**
+   * Retrieves all meal plans, including detailed food information for each meal.
    */
   async apiMealTrackerMealplansGetRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -288,7 +301,6 @@ export class MealTrackerApi extends runtime.BaseAPI {
     const queryParameters: any = {};
     const headerParameters: runtime.HTTPHeaders = {};
 
-    // Perform the API request
     const response = await this.request(
       {
         path: `/api/MealTracker/mealplans`,
@@ -299,18 +311,19 @@ export class MealTrackerApi extends runtime.BaseAPI {
       initOverrides
     );
 
-    // Ensure the response is processed into JSON and cast it to `MealPlan[]`
-    return new runtime.JSONApiResponse(response, (jsonValue) => {
-      return jsonValue as MealPlan[]; // Cast the response to `MealPlan[]`
-    });
+    return new runtime.JSONApiResponse(
+      response,
+      (jsonValue) => jsonValue as MealPlan[]
+    );
   }
 
   /**
+   * Retrieves all meal plans, including detailed food information for each meal.
    */
   async apiMealTrackerMealplansGet(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<MealPlan[]> {
     const response = await this.apiMealTrackerMealplansGetRaw(initOverrides);
-    return await response.value(); // Ensure it processes and returns the array of MealPlans
+    return response.value();
   }
 }

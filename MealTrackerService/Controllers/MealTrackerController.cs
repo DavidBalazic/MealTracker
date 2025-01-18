@@ -39,39 +39,47 @@ namespace MealTrackerService.Controllers
         [HttpGet("mealplans")]
         public async Task<IActionResult> GetMealPlans()
         {
-            var mealPlans = await _context.MealPlans.Find(_ => true).ToListAsync();
-
-            foreach (var mealPlan in mealPlans)
+            try
             {
-                foreach (var meal in mealPlan.Meals)
-                {
-                    var foodDetails = new List<Food>();
+                var mealPlans = await _context.MealPlans.Find(_ => true).ToListAsync();
 
-                    foreach (var foodId in meal.FoodIds)
+                foreach (var mealPlan in mealPlans)
+                {
+                    foreach (var meal in mealPlan.Meals)
                     {
-                        try
+                        var foodDetails = new List<Food>();
+
+                        foreach (var foodId in meal.FoodIds)
                         {
-                            var food = await _foodServiceClient.FoodsGETAsync(foodId);
-                            if (food != null)
+                            try
                             {
-                                foodDetails.Add(food);
+                                var food = await _foodServiceClient.FoodsGETAsync(foodId);
+                                if (food != null)
+                                {
+                                    foodDetails.Add(food);
+                                }
+                            }
+                            catch (ApiException ex) when (ex.StatusCode == 404)
+                            {
+                                continue;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error fetching food with ID {foodId}: {ex.Message}");
                             }
                         }
-                        catch (ApiException ex) when (ex.StatusCode == 404)
-                        {
-                            continue;
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Error fetching food with ID {foodId}: {ex.Message}");
-                        }
+
+                        meal.Foods = foodDetails;
                     }
-
-                    meal.Foods = foodDetails;
                 }
-            }
 
-            return Ok(mealPlans);
+                return Ok(mealPlans);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving meal plans: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -86,90 +94,65 @@ namespace MealTrackerService.Controllers
         [HttpPut("mealplan/{id}")]
         public async Task<IActionResult> UpdateMealPlan(string id, [FromBody] MealPlan updatedMealPlan)
         {
-            if (updatedMealPlan == null)
-            {
-                return BadRequest("MealPlan cannot be null.");
-            }
+            if (updatedMealPlan == null) return BadRequest("MealPlan cannot be null.");
+            if (id != updatedMealPlan.Id) return BadRequest("ID mismatch.");
 
-            if (id != updatedMealPlan.Id)
+            try
             {
-                return BadRequest("ID in the URL does not match ID in the body.");
-            }
+                var existingMealPlan = await _context.MealPlans.Find(m => m.Id == id).FirstOrDefaultAsync();
+                if (existingMealPlan == null) return NotFound($"MealPlan with id {id} does not exist.");
 
-            var existingMealPlan = await _context.MealPlans.Find(m => m.Id == id).FirstOrDefaultAsync();
-            if (existingMealPlan == null)
-            {
-                return NotFound($"MealPlan with id {id} does not exist.");
-            }
-
-            foreach (var meal in updatedMealPlan.Meals)
-            {
-                var updatedFoodIds = new List<string>();
-
-                foreach (var food in meal.Foods)
+                foreach (var meal in updatedMealPlan.Meals)
                 {
-                    if (string.IsNullOrEmpty(food.Id) || !ObjectId.TryParse(food.Id, out _))
+                    var updatedFoodIds = new List<string>();
+                    foreach (var food in meal.Foods)
                     {
-                        return BadRequest($"Food '{food.Name}' must have a valid 24-digit hex string ID.");
-                    }
+                        if (string.IsNullOrEmpty(food.Id) || !ObjectId.TryParse(food.Id, out _))
+                            return BadRequest($"Food '{food.Name}' must have a valid 24-digit hex string ID.");
 
-                    var foodUpdated = await UpdateFoodIfExistsAsync(food);
-                    if (!foodUpdated)
-                    {
-                        return NotFound($"Food with id {food.Id} does not exist in the FoodService.");
+                        await UpdateFoodIfExistsAsync(food);
+                        updatedFoodIds.Add(food.Id);
                     }
-
-                    updatedFoodIds.Add(food.Id);
+                    meal.FoodIds = updatedFoodIds;
+                    meal.Foods.Clear();
                 }
 
-                meal.FoodIds = updatedFoodIds;
-                meal.Foods.Clear();
+                var filter = Builders<MealPlan>.Filter.Eq(m => m.Id, id);
+                await _context.MealPlans.ReplaceOneAsync(filter, updatedMealPlan);
+                return Ok(updatedMealPlan);
             }
-
-            var filter = Builders<MealPlan>.Filter.Eq(m => m.Id, id);
-            var updateResult = await _context.MealPlans.ReplaceOneAsync(filter, updatedMealPlan);
-
-            if (updateResult.MatchedCount == 0)
+            catch (Exception ex)
             {
-                return NotFound($"MealPlan with id {id} was not found.");
+                Console.WriteLine($"Error updating meal plan: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
-
-            return Ok(updatedMealPlan);
         }
         private async Task<bool> UpdateFoodIfExistsAsync(Food food)
         {
             try
             {
-                // Check if the food exists in the FoodService
                 var existingFood = await _foodServiceClient.FoodsGETAsync(food.Id);
-
                 if (existingFood != null)
                 {
-                    // If food exists, update it
-                    try
-                    {
-                        await _foodServiceClient.FoodsPUTAsync(food.Id, food);
-                    }
-                    catch (ApiException ex) when (ex.StatusCode == 204)
-                    {
-                        // Treat 204 No Content as a successful update
-                        return true;
-                    }
+                    await HandleFoodPUTAsync(food);
                     return true;
                 }
             }
             catch (ApiException ex) when (ex.StatusCode == 404)
             {
-                // If food is not found, insert it
-                await _foodServiceClient.FoodsPOSTAsync(food);
+                await HandleFoodPOSTAsync(food);
                 return true;
             }
-            catch (ApiException ex)
+            catch (ApiException ex) when (ex.StatusCode == 201)
             {
-                // Re-throw other unexpected errors
+                Console.WriteLine($"Food successfully created: {ex.Response}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error while updating food: {ex.Message}");
                 throw;
             }
-
             return false;
         }
 
@@ -183,81 +166,103 @@ namespace MealTrackerService.Controllers
         [HttpPost("mealplan")]
         public async Task<IActionResult> CreateMealPlan([FromBody] MealPlan mealPlan)
         {
-            if (mealPlan == null)
-            {
-                return BadRequest("MealPlan cannot be null.");
-            }
+            if (mealPlan == null) return BadRequest("MealPlan cannot be null.");
 
-            foreach (var meal in mealPlan.Meals)
+            try
             {
-                var newFoodIds = new List<string>();
-
-                foreach (var food in meal.Foods)
+                foreach (var meal in mealPlan.Meals)
                 {
-                    if (string.IsNullOrEmpty(food.Id) || !ObjectId.TryParse(food.Id, out _))
+                    var newFoodIds = new List<string>();
+                    foreach (var food in meal.Foods)
                     {
-                        return BadRequest($"Food '{food.Name}' must have a valid 24-digit hex string ID.");
-                    }
-                    else
-                    {
+                        if (string.IsNullOrEmpty(food.Id) || !ObjectId.TryParse(food.Id, out _))
+                            return BadRequest($"Food '{food.Name}' must have a valid 24-digit hex string ID.");
+
                         await EnsureFoodInDatabaseAsync(food);
                         newFoodIds.Add(food.Id);
                     }
+                    meal.FoodIds = newFoodIds;
+                    meal.Foods.Clear();
                 }
-
-                meal.FoodIds = newFoodIds;
-                meal.Foods.Clear();
+                await _context.MealPlans.InsertOneAsync(mealPlan);
+                return CreatedAtAction(nameof(GetMealPlans), new { id = mealPlan.Id }, mealPlan);
             }
-
-            await _context.MealPlans.InsertOneAsync(mealPlan);
-            return CreatedAtAction(nameof(GetMealPlans), new { id = mealPlan.Id }, mealPlan);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating meal plan: {ex.Message}");
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
         }
         
         private async Task EnsureFoodInDatabaseAsync(Food food)
         {
             try
             {
-                // Check if the food exists in the FoodService
                 var existingFood = await _foodServiceClient.FoodsGETAsync(food.Id);
-
                 if (existingFood != null)
                 {
-                    // If the food exists, try updating it
                     await HandleFoodPUTAsync(food);
                 }
                 else
                 {
-                    // If the food does not exist, insert it
-                    await _foodServiceClient.FoodsPOSTAsync(food);
+                    await HandleFoodPOSTAsync(food);
                 }
             }
             catch (ApiException ex) when (ex.StatusCode == 404)
             {
-                // If food is not found, insert it
-                await _foodServiceClient.FoodsPOSTAsync(food);
+                await HandleFoodPOSTAsync(food);
             }
-            catch (ApiException ex)
+            catch (ApiException ex) when (ex.StatusCode == 201)
             {
-                // Re-throw unexpected errors
+                Console.WriteLine($"Food successfully created: {ex.Response}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error ensuring food: {ex.Message}");
                 throw;
             }
         }
 
+
+        /// <summary>
+        /// Handles creating a new food item via the Food Service.
+        /// </summary>
+        /// <param name="food">The food item to create.</param>
+        private async Task HandleFoodPOSTAsync(Food food)
+        {
+            try
+            {
+                await _foodServiceClient.FoodsPOSTAsync(food);
+            }
+            catch (ApiException ex) when (ex.StatusCode == 201)
+            {
+                // Handle 201 Created as a successful creation
+                Console.WriteLine($"Food successfully created: {ex.Response}");
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Unexpected error during food creation: {ex.Message}");
+                throw;
+            }
+        }
+        
+        /// <summary>
+        /// Handles updating an existing food item via the Food Service.
+        /// </summary>
+        /// <param name="food">The food item to update.</param>
         private async Task HandleFoodPUTAsync(Food food)
         {
             try
             {
-                // Attempt to update the food
                 await _foodServiceClient.FoodsPUTAsync(food.Id, food);
             }
             catch (ApiException ex) when (ex.StatusCode == 204)
             {
-                // Treat 204 No Content as a successful update
                 return;
             }
-            catch (ApiException ex)
+            catch (Exception ex)
             {
-                // Re-throw unexpected errors
+                Console.WriteLine($"Unexpected error during food update: {ex.Message}");
                 throw;
             }
         }

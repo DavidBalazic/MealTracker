@@ -3,7 +3,10 @@ import { Card, CardContent } from "../../Components/ui/card";
 import CreateMeal from "./CreateMeal";
 import EditMeal from "./EditMeal";
 import { mealTrackerApi } from "../../lib/axios";
-import { MealPlan } from "../../ClientGenerator/generated/MealTrackerClient/models";
+import {
+  MealPlan,
+  Meal,
+} from "../../ClientGenerator/generated/MealTrackerClient/models";
 
 interface MealsProps {
   onMealPlanCreated?: () => Promise<void>;
@@ -17,25 +20,38 @@ const Meals: React.FC<MealsProps> = ({ onMealPlanCreated }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchMealPlansFromApi = async (): Promise<MealPlan[]> => {
+    try {
+      const response = await mealTrackerApi.apiMealTrackerMealplansGet();
+      console.log("Raw API Response:", response);
+
+      if (!Array.isArray(response)) {
+        throw new Error("Invalid response format. Expected an array.");
+      }
+
+      return response;
+    } catch (err) {
+      console.error("Error fetching meal plans from API", err);
+      throw err; // Re-throw the error to handle it in the caller
+    }
+  };
+
   // Function to fetch meal plans
   const fetchMealPlans = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch meal plans
-      const response = await mealTrackerApi.apiMealTrackerMealplansGet();
-      console.log("API Response:", response);
+      const response = await fetchMealPlansFromApi();
 
-      // Ensure the response is an array and process `date`
-      if (!response || !Array.isArray(response)) {
-        throw new Error("Invalid response format. Expected an array.");
-      }
-
-      // Convert `date` strings to Date objects safely
+      // Parse MealPlan data
       const parsedMealPlans: MealPlan[] = response.map((plan) => ({
         ...plan,
         date: plan.date ? new Date(plan.date) : undefined,
+        meals: (plan.meals ?? []).map((meal) => ({
+          ...meal,
+          foods: (meal.foods ?? []).map((food) => ({ ...food })),
+        })),
       }));
 
       setMealPlans(parsedMealPlans);
