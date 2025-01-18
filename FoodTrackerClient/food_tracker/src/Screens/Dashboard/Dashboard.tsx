@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "../../Components/ui/card";
+import { mealTrackerApi } from "../../lib/axios"; // Import your API client
+import { MealPlan } from "../../ClientGenerator/generated/MealTrackerClient/models";
 
 const Dashboard: React.FC = () => {
   const [statistics, setStatistics] = useState<{
@@ -10,31 +12,43 @@ const Dashboard: React.FC = () => {
 
   const [error, setError] = useState<string | null>(null);
 
+  const fetchMealPlansFromApi = async (): Promise<MealPlan[]> => {
+    try {
+      const response = await mealTrackerApi.apiMealTrackerMealplansGet();
+      if (!Array.isArray(response)) {
+        throw new Error("Invalid response format. Expected an array.");
+      }
+      return response;
+    } catch (err) {
+      console.error("Error fetching meal plans from API", err);
+      throw err;
+    }
+  };
+
   useEffect(() => {
-    // Fetch statistics from the Statistics Service
+    // Fetch meal plans and calculate statistics
     const fetchStatistics = async () => {
       try {
-        const response = await fetch(
-          "https://statisticsservice.onrender.com/statistics",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              meals: [{ calories: 400 }, { calories: 600 }], // Example data, replace with actual data source
-            }),
-          }
+        const mealPlans = await fetchMealPlansFromApi();
+
+        // Extract all meals from meal plans
+        const allMeals = mealPlans.flatMap((plan) => plan.meals ?? []);
+
+        // Calculate total calories
+        const totalCalories = allMeals.reduce(
+          (sum, meal) => sum + (meal.calories || 0),
+          0
         );
 
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
+        // Calculate meal count
+        const mealCount = allMeals.length;
 
-        const data = await response.json();
-        setStatistics(data);
+        // Calculate average calories
+        const averageCalories = mealCount > 0 ? totalCalories / mealCount : 0;
+
+        setStatistics({ totalCalories, averageCalories, mealCount });
       } catch (err: any) {
-        setError(err.message);
+        setError("Failed to fetch statistics. Please try again later.");
       }
     };
 
@@ -65,10 +79,12 @@ const Dashboard: React.FC = () => {
         <Card className="shadow-md hover:shadow-xl transform transition-all duration-500 animate-fade-in-up">
           <CardContent className="p-4">
             <h2 className="text-lg font-semibold text-black mb-2">
-              Average Calories
+              Average Calories Per Meal
             </h2>
             <p className="text-4xl font-bold text-black">
-              {statistics ? `${statistics.averageCalories} kcal` : "Loading..."}
+              {statistics
+                ? `${statistics.averageCalories.toFixed(2)} kcal`
+                : "Loading..."}
             </p>
           </CardContent>
         </Card>
@@ -105,22 +121,14 @@ const Dashboard: React.FC = () => {
             Recent Meals
           </h2>
           <ul className="space-y-2">
-            <li className="flex justify-between text-gray-700">
-              <span>Grilled Chicken Salad</span>
-              <span>450 kcal</span>
-            </li>
-            <li className="flex justify-between text-gray-700">
-              <span>Fruit Smoothie</span>
-              <span>250 kcal</span>
-            </li>
-            <li className="flex justify-between text-gray-700">
-              <span>Avocado Toast</span>
-              <span>320 kcal</span>
-            </li>
-            <li className="flex justify-between text-gray-700">
-              <span>Steamed Broccoli & Quinoa</span>
-              <span>180 kcal</span>
-            </li>
+            {statistics ? (
+              <li className="flex justify-between text-gray-700">
+                <span>Total Meals</span>
+                <span>{statistics.mealCount}</span>
+              </li>
+            ) : (
+              "Loading..."
+            )}
           </ul>
         </CardContent>
       </Card>
