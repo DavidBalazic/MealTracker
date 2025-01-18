@@ -22,10 +22,12 @@ namespace FoodService.Controllers
         /// </summary>
         /// <returns>Seznam živil.</returns>
         /// <response code="200">Seznam uspešno pridobljen.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
         /// <response code="500">Napaka na strežniku.</response>
         [Authorize]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<Food>>> GetAll() => await _foodService.GetAllAsync();
 
@@ -41,10 +43,12 @@ namespace FoodService.Controllers
         ///
         /// </remarks>
         /// <response code="200">Podatki uspešno pridobljeni.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
         /// <response code="404">Živilo ni bilo najdeno.</response>
         [Authorize]
         [HttpGet("{id:length(24)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Food>> Get(string id)
         {
@@ -65,10 +69,12 @@ namespace FoodService.Controllers
         ///
         /// </remarks>
         /// <response code="200">Uspešno vrnjen seznam živil.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
         /// <response code="404">Ni bilo najdenih živil, ki bi imela manj kalorij, kot je določeno.</response>
         [Authorize]
         [HttpGet("belowCalories")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<List<Food>>> GetByMaxCalories([FromQuery] double maxCalories)
         {
@@ -94,10 +100,12 @@ namespace FoodService.Controllers
         ///
         /// </remarks>
         /// <response code="200">Uspešno vrnjen seznam živil, ki ne vsebujejo alergenov.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
         /// <response code="404">Ni bilo najdenih živil brez navedenih alergenov.</response>
         [Authorize]
         [HttpGet("excludedAllergens")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<List<Food>>> GetByExcludedAllergens([FromQuery] List<string> allergens)
         {
@@ -133,11 +141,15 @@ namespace FoodService.Controllers
         ///
         /// </remarks>
         /// <response code="201">Živilo uspešno ustvarjeno.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
         /// <response code="400">Neveljavni podatki.</response>
         [Authorize(Roles = "admin")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> Post([FromBody] FoodDto foodDto)
         {
             if (foodDto == null)
@@ -197,10 +209,14 @@ namespace FoodService.Controllers
         /// </remarks>
         /// <response code="201">Uspešno ustvarjen seznam živil.</response>
         /// <response code="400">Seznam živil je prazen ali ni veljaven.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
         [Authorize(Roles = "admin")]
         [HttpPost("createMany")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> AddManyFoods([FromBody] List<FoodDto> foodDtos)
         {
             if (foodDtos == null || foodDtos.Count == 0)
@@ -250,10 +266,14 @@ namespace FoodService.Controllers
         /// <response code="204">Živilo uspešno posodobljeno.</response>
         /// <response code="404">Živilo ni bilo najdeno.</response>
         /// <response code="400">Seznam živil je prazen ali ni veljaven.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
         [Authorize(Roles = "admin")]
         [HttpPut("{id:length(24)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(string id, [FromBody] FoodDto foodDto)
         {
@@ -290,10 +310,14 @@ namespace FoodService.Controllers
         ///
         /// </remarks>
         /// <response code="204">Živilo uspešno izbrisano.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
         /// <response code="404">Živilo ni bilo najdeno.</response>
         [Authorize(Roles = "admin")]
         [HttpDelete("{id:length(24)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(string id)
         {
@@ -316,11 +340,15 @@ namespace FoodService.Controllers
         /// </remarks>
         /// <response code="200">Uspešno izbrisano določeno število živil.</response>
         /// <response code="400">Parameter ime ni določen ali je prazen.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
         /// <response code="404">Ni bilo najdenih živil za brisanje.</response>
         [Authorize(Roles = "admin")]
         [HttpDelete("deleteByName")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteByName([FromQuery] string name)
         {
