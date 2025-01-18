@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using System.Collections.Immutable;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -190,6 +191,88 @@ namespace UserServices.Impl.Implementation
             // Create and return the token
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        public async Task DeleteUserAccountAsync(string userId)
+        {
+            var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var deleteResult = await _users.DeleteOneAsync(u => u.Id == userId);
+            if (deleteResult.DeletedCount == 0)
+            {
+                throw new Exception("Failed to delete the user.");
+            }
+        }
+
+        public async Task AdminDeleteUserAsync(string userId)
+        {
+            var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var deleteResult = await _users.DeleteOneAsync(u => u.Id == userId);
+            if (deleteResult.DeletedCount == 0)
+            {
+                throw new Exception("Failed to delete the user.");
+            }
+        }
+
+        public async Task UpdateUserRoleAsync(string userId, string newRole)
+        {
+            var validRoles = new List<string> { "user", "admin" };
+            if (!validRoles.Contains(newRole.ToLower()))
+            {
+                throw new Exception("Invalid role specified.");
+            }
+
+            var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var updateDefinition = Builders<UserModel>.Update.Set(u => u.Role, newRole);
+            var updateResult = await _users.UpdateOneAsync(
+                u => u.Id == userId,
+                updateDefinition
+            );
+
+            if (updateResult.ModifiedCount == 0)
+            {
+                throw new Exception("Failed to update the user's role.");
+            }
+        }
+
+        public async Task<List<UserInfoDTO>> GetAllUsersAsync(string role = null)
+        {
+            if (!string.IsNullOrEmpty(role))
+            {
+                return await _users
+                    .Find(u => u.Role.ToLower() == role.ToLower())
+                    .Project(u => new UserInfoDTO
+                    {
+                        Id = u.Id,
+                        Email = u.Email,
+                        Role = u.Role
+                    })
+                    .ToListAsync();
+            }
+
+            return await _users
+                .Find(_ => true)
+                .Project(u => new UserInfoDTO
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    Role = u.Role
+                })
+                .ToListAsync();
         }
     }
 }

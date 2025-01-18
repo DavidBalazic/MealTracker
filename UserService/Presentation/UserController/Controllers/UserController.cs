@@ -95,30 +95,87 @@ namespace UserController.Controllers
             return Ok(new { IsValid = isValid });
         }
 
-        // Protected endpoint: Admin-only access
-        [HttpGet("admin-only")]
-        [Authorize(Roles = "admin")] // Requires 'admin' role
-        public IActionResult AdminOnly()
-        {
-            return Ok(new { Message = "This endpoint is accessible only to admin users." });
-        }
-
-        // Protected endpoint: User Info (requires authentication)
         [HttpGet("user-info")]
         [Authorize]
         public IActionResult UserInfo()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Extract user ID
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);       // Extract email using ClaimTypes.Email
-            var userRole = User.FindFirstValue(ClaimTypes.Role);         // Extract role
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);    
+            var userRole = User.FindFirstValue(ClaimTypes.Role);       
 
             return Ok(new
             {
                 Message = "User Info",
                 UserId = userId,
-                Email = userEmail, // Display the user's email
+                Email = userEmail, 
                 Role = userRole
             });
+        }
+
+        [HttpDelete("delete-account")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { Error = "User ID not found in token." });
+                }
+
+                await _userService.DeleteUserAccountAsync(userId);
+                return Ok(new { Message = "Your account has been deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
+        [HttpDelete("admin/delete-user/{id}")]
+        [Authorize(Roles = "admin")] 
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            try
+            {
+                await _userService.AdminDeleteUserAsync(id);
+                return Ok(new { Message = $"User with ID {id} has been deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
+        [HttpPut("admin/update-role/{id}")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> UpdateUserRole(string id, [FromBody] string newRole)
+        {
+            try
+            {
+                await _userService.UpdateUserRoleAsync(id, newRole);
+                return Ok(new { Message = $"User with ID {id} has been updated to role '{newRole}' successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> GetAllUsers([FromQuery] string role)
+        {
+            try
+            {
+                var users = await _userService.GetAllUsersAsync(role);
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
         }
     }
 }
