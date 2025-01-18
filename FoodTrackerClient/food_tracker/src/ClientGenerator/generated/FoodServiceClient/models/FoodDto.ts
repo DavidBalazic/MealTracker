@@ -16,83 +16,76 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface Food
+ * @interface FoodDto
  */
-export interface Food {
+export interface FoodDto {
     /**
      * 
      * @type {string}
-     * @memberof Food
-     */
-    id?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof Food
+     * @memberof FoodDto
      */
     name?: string | null;
     /**
      * 
      * @type {number}
-     * @memberof Food
+     * @memberof FoodDto
      */
     calories?: number;
     /**
      * 
      * @type {number}
-     * @memberof Food
+     * @memberof FoodDto
      */
     protein?: number;
     /**
      * 
      * @type {number}
-     * @memberof Food
+     * @memberof FoodDto
      */
     carbohydrates?: number;
     /**
      * 
      * @type {number}
-     * @memberof Food
+     * @memberof FoodDto
      */
     fat?: number;
     /**
      * 
      * @type {number}
-     * @memberof Food
+     * @memberof FoodDto
      */
     servingSize?: number;
     /**
      * 
      * @type {string}
-     * @memberof Food
+     * @memberof FoodDto
      */
     unit?: string | null;
     /**
      * 
      * @type {Array<string>}
-     * @memberof Food
+     * @memberof FoodDto
      */
     allergens?: Array<string> | null;
 }
 
 /**
- * Check if a given object implements the Food interface.
+ * Check if a given object implements the FoodDto interface.
  */
-export function instanceOfFood(value: object): value is Food {
+export function instanceOfFoodDto(value: object): value is FoodDto {
     return true;
 }
 
-export function FoodFromJSON(json: any): Food {
-    return FoodFromJSONTyped(json, false);
+export function FoodDtoFromJSON(json: any): FoodDto {
+    return FoodDtoFromJSONTyped(json, false);
 }
 
-export function FoodFromJSONTyped(json: any, ignoreDiscriminator: boolean): Food {
+export function FoodDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean): FoodDto {
     if (json == null) {
         return json;
     }
     return {
         
-        'id': json['Id'] == null ? undefined : json['Id'],
         'name': json['Name'] == null ? undefined : json['Name'],
         'calories': json['Calories'] == null ? undefined : json['Calories'],
         'protein': json['Protein'] == null ? undefined : json['Protein'],
@@ -104,18 +97,17 @@ export function FoodFromJSONTyped(json: any, ignoreDiscriminator: boolean): Food
     };
 }
 
-export function FoodToJSON(json: any): Food {
-    return FoodToJSONTyped(json, false);
+export function FoodDtoToJSON(json: any): FoodDto {
+    return FoodDtoToJSONTyped(json, false);
 }
 
-export function FoodToJSONTyped(value?: Food | null, ignoreDiscriminator: boolean = false): any {
+export function FoodDtoToJSONTyped(value?: FoodDto | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
 
     return {
         
-        'Id': value['id'],
         'Name': value['name'],
         'Calories': value['calories'],
         'Protein': value['protein'],

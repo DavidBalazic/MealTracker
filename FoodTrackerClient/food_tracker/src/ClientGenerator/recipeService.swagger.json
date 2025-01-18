@@ -1,18 +1,18 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "RecipeService",
-    "version": "1.0"
+    "title": "Recipes API",
+    "description": "API za upravljanje s podatki o receptih.",
+    "version": "v1"
   },
   "paths": {
     "/api/Recipes": {
       "get": {
-        "tags": [
-          "Recipes"
-        ],
+        "tags": ["Recipes"],
+        "summary": "Pridobi seznam vseh receptov.",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Seznam uspešno pridobljen.",
             "content": {
               "text/plain": {
                 "schema": {
@@ -39,48 +39,113 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Napaka na strežniku."
           }
         }
       },
       "post": {
-        "tags": [
-          "Recipes"
-        ],
+        "tags": ["Recipes"],
+        "summary": "Ustvari nov recept.",
+        "description": "Sample request:\r\n            \r\n    POST /Recipes\r\n    {\r\n        \"name\": \"Smoothie\",\r\n        \"ingredients\": [\r\n            {\r\n                \"foodId\": \"64b8f740d8234c12d481\",\r\n                \"quantity\": 200\r\n            },\r\n            {\r\n                \"foodId\": \"64b8f740d8234c12d481\",\r\n                \"quantity\": 100\r\n            },\r\n            {\r\n                \"foodId\": \"64b8f740d8234c12d481\",\r\n                \"quantity\": 200\r\n            }\r\n        ],\r\n        \"servings\": 2,\r\n        \"instructions\": \"Mix apple, strawberry and milk\",\r\n        \"tags\": [ \"Smotohie\" ]\r\n    }",
         "requestBody": {
+          "description": "Podatki o receptu za ustvarjanje.",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RecipeRequest"
+                "$ref": "#/components/schemas/RecipeRequestDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/RecipeRequest"
+                "$ref": "#/components/schemas/RecipeRequestDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/RecipeRequest"
+                "$ref": "#/components/schemas/RecipeRequestDto"
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Success"
+          "201": {
+            "description": "Recept uspešno ustvarjen."
+          },
+          "400": {
+            "description": "Sestavina ne obstaja.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
     },
     "/api/Recipes/{id}": {
       "get": {
-        "tags": [
-          "Recipes"
-        ],
+        "tags": ["Recipes"],
+        "summary": "Pridobi recept po ID-ju.",
+        "description": "Sample request:\r\n            \r\n    GET /Recipes/675ed9ecdd35e38cb0c61281",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID recepta (dolžina 24 znakov).",
             "required": true,
             "schema": {
               "maxLength": 24,
@@ -91,7 +156,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Podatki uspešno pridobljeni.",
             "content": {
               "text/plain": {
                 "schema": {
@@ -106,6 +171,26 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Recipe"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recept ni bil najden.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -113,13 +198,14 @@
         }
       },
       "put": {
-        "tags": [
-          "Recipes"
-        ],
+        "tags": ["Recipes"],
+        "summary": "Posodobi obstoječi recept po ID-ju.",
+        "description": "Sample request:\r\n            \r\n    PUT /Recipes/675ed9ecdd35e38cb0c61281\r\n    {\r\n        \"name\": \"Smoothie\",\r\n        \"ingredients\": [\r\n            {\r\n                \"foodId\": \"64b8f740d8234c12d481\",\r\n                \"quantity\": 150\r\n            }\r\n        ],\r\n        \"servings\": 2,\r\n        \"instructions\": \"Zmešajte vse sestavine v mešalniku.\",\r\n        \"tags\": [ \"pijača\", \"zajtrk\" ]\r\n    }",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID recepta (dolžina 24 znakov).",
             "required": true,
             "schema": {
               "maxLength": 24,
@@ -129,38 +215,120 @@
           }
         ],
         "requestBody": {
+          "description": "Posodobljeni podatki o receptu.",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Recipe"
+                "$ref": "#/components/schemas/RecipeRequestDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Recipe"
+                "$ref": "#/components/schemas/RecipeRequestDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Recipe"
+                "$ref": "#/components/schemas/RecipeRequestDto"
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Success"
+          "204": {
+            "description": "Recept je bil uspešno posodobljen."
+          },
+          "404": {
+            "description": "Recept z navedenim ID-jem ni bil najden.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Podatki o receptu so napačni ali sestavina ne obstaja.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       },
       "delete": {
-        "tags": [
-          "Recipes"
-        ],
+        "tags": ["Recipes"],
+        "summary": "Izbriše recept po ID-ju.",
+        "description": "Sample request:\r\n            \r\n    DELETE /Recipes/675ed9ecdd35e38cb0c61281",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID recepta (dolžina 24 znakov).",
             "required": true,
             "schema": {
               "maxLength": 24,
@@ -172,6 +340,523 @@
         "responses": {
           "200": {
             "description": "Success"
+          },
+          "404": {
+            "description": "Recept z navedenim ID-jem ni bil najden.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Recept je bil uspešno izbrisan."
+          }
+        }
+      }
+    },
+    "/api/Recipes/byTag": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Pridobi seznam receptov glede na oznako.",
+        "description": "Sample request:\r\n            \r\n    GET /Recipes/byTag?tag=vegan",
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Oznaka, po kateri se filtrirajo recepti.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seznam receptov uspešno pridobljen.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Recipe"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Recipe"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Recipe"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recepti z dano oznako niso bili najdeni.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Recipes/belowCalories": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Pridobi seznam receptov z manj kot določenim številom kalorij.",
+        "description": "Sample request:\r\n            \r\n    GET /Recipes/belowCalories?maxCalories=500",
+        "parameters": [
+          {
+            "name": "maxCalories",
+            "in": "query",
+            "description": "Najvišje število kalorij, ki jih lahko imajo recepti.",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seznam receptov uspešno pridobljen.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Recipe"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Recipe"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Recipe"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recepti z manj kalorijami od določene vrednosti niso bili najdeni.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Recipes/createMany": {
+      "post": {
+        "tags": ["Recipes"],
+        "summary": "Ustvari več receptov hkrati.",
+        "description": "Sample request:\r\n            \r\n    POST /Recipes/createMany\r\n    [\r\n        {\r\n            \"name\": \"Smoothie\",\r\n            \"ingredients\": [\r\n                {\r\n                    \"foodId\": \"64b8f740d8234c12d481\",\r\n                    \"quantity\": 200\r\n                },\r\n                {\r\n                    \"foodId\": \"64b8f740d8234c12d481\",\r\n                    \"quantity\": 100\r\n                },\r\n                {\r\n                    \"foodId\": \"64b8f740d8234c12d481\",\r\n                    \"quantity\": 200\r\n                }\r\n            ],\r\n            \"servings\": 2,\r\n            \"instructions\": \"Mix apple, strawberry and milk\",\r\n            \"tags\": [ \"Smotohie\" ]\r\n        },\r\n        {\r\n            \"name\": \"Chicken and Broccoli\",\r\n            \"ingredients\": [\r\n                {\r\n                    \"foodId\": \"64b8f740d8234c12d482\",\r\n                    \"quantity\": 150\r\n                },\r\n                {\r\n                    \"foodId\": \"64b8f740d8234c12d482\",\r\n                    \"quantity\": 200\r\n                }\r\n            ],\r\n            \"servings\": 2,\r\n            \"instructions\": \"Steam broccoli and fry chickhen\",\r\n            \"tags\": [ \"Healthy\" ]\r\n        }\r\n    ]",
+        "requestBody": {
+          "description": "Seznam podatkov o receptih za ustvarjanje.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RecipeRequestDto"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RecipeRequestDto"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RecipeRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Recepti so bili uspešno ustvarjeni."
+          },
+          "400": {
+            "description": "Seznam receptov je prazen ali sestavina ne obstaja.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Recipes/{id}/updateTags": {
+      "put": {
+        "tags": ["Recipes"],
+        "summary": "Posodobi oznake obstoječega recepta po ID-ju.",
+        "description": "Sample request:\r\n            \r\n    PUT /Recipes/675ed9ecdd35e38cb0c61281/updateTags\r\n    \r\n    [ \"Vegan\", \"Healthy\" ]",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID recepta (dolžina 24 znakov).",
+            "required": true,
+            "schema": {
+              "maxLength": 24,
+              "minLength": 24,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Seznam novih oznak za recept.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Oznake so bile uspešno posodobljene."
+          },
+          "404": {
+            "description": "Recept z navedenim ID-jem ni bil najden.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Recipes/deleteByName": {
+      "delete": {
+        "tags": ["Recipes"],
+        "summary": "Izbriše recepte z določenim imenom.",
+        "description": "Sample request:\r\n            \r\n    DELETE /Recipes/deleteByName?name=Chocolate%20Cake",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Ime recepta, ki ga želite izbrisati.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recepti so bili uspešno izbrisani."
+          },
+          "400": {
+            "description": "Ime ni bilo podano ali je bilo prazno.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recepti z določenim imenom niso bili najdeni.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -215,6 +900,33 @@
         },
         "additionalProperties": false
       },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": {}
+      },
       "Recipe": {
         "type": "object",
         "properties": {
@@ -254,13 +966,9 @@
         },
         "additionalProperties": false
       },
-      "RecipeRequest": {
+      "RecipeRequestDto": {
         "type": "object",
         "properties": {
-          "Id": {
-            "type": "string",
-            "nullable": true
-          },
           "Name": {
             "type": "string",
             "nullable": true
@@ -290,6 +998,19 @@
         },
         "additionalProperties": false
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Enter your valid JWT token below.",
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ]
 }

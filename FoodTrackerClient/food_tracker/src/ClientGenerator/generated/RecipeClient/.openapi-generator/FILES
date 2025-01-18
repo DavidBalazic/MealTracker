@@ -4,7 +4,8 @@ apis/index.ts
 index.ts
 models/Ingredient.ts
 models/Nutrition.ts
+models/ProblemDetails.ts
 models/Recipe.ts
-models/RecipeRequest.ts
+models/RecipeRequestDto.ts
 models/index.ts
 runtime.ts

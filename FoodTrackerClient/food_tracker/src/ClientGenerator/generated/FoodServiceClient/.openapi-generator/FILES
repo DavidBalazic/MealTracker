@@ -3,5 +3,7 @@ apis/FoodsApi.ts
 apis/index.ts
 index.ts
 models/Food.ts
+models/FoodDto.ts
+models/ProblemDetails.ts
 models/index.ts
 runtime.ts

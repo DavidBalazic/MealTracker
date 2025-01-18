@@ -2,5 +2,6 @@
 /* eslint-disable */
 export * from './Ingredient';
 export * from './Nutrition';
+export * from './ProblemDetails';
 export * from './Recipe';
-export * from './RecipeRequest';
+export * from './RecipeRequestDto';

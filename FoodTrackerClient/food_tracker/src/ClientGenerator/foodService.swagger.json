@@ -1,18 +1,18 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "FoodService",
-    "version": "1.0"
+    "title": "Foods API",
+    "description": "API za upravljanje s podatki o hrani.",
+    "version": "v1"
   },
   "paths": {
     "/api/Foods": {
       "get": {
-        "tags": [
-          "Foods"
-        ],
+        "tags": ["Foods"],
+        "summary": "Pridobi seznam vseh živil.",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Seznam uspešno pridobljen.",
             "content": {
               "text/plain": {
                 "schema": {
@@ -39,48 +39,112 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Napaka na strežniku."
           }
         }
       },
       "post": {
-        "tags": [
-          "Foods"
-        ],
+        "tags": ["Foods"],
+        "summary": "Dodaj novo živilo.",
+        "description": "Sample request:\r\n            \r\n    POST /Foods\r\n    {\r\n       \"Name\": \"Peanut Butter\",\r\n       \"Calories\": 588,\r\n       \"Protein\": 25,\r\n       \"Carbohydrates\": 20,\r\n       \"Fat\": 50,\r\n       \"ServingSize\": 100,\r\n       \"Unit\": \"g\",\r\n       \"Allergens\": [ \"Peanuts\", \"Soy\" ]\r\n    }",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Food"
+                "$ref": "#/components/schemas/FoodDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Food"
+                "$ref": "#/components/schemas/FoodDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Food"
+                "$ref": "#/components/schemas/FoodDto"
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Success"
+          "201": {
+            "description": "Živilo uspešno ustvarjeno."
+          },
+          "400": {
+            "description": "Neveljavni podatki.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
     },
     "/api/Foods/{id}": {
       "get": {
-        "tags": [
-          "Foods"
-        ],
+        "tags": ["Foods"],
+        "summary": "Pridobi živilo po ID-ju.",
+        "description": "Sample request:\r\n            \r\n    GET /Foods/675ed9ecdd35e38cb0c61281",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID živila (dolžina 24 znakov).",
             "required": true,
             "schema": {
               "maxLength": 24,
@@ -91,7 +155,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Podatki uspešno pridobljeni.",
             "content": {
               "text/plain": {
                 "schema": {
@@ -106,6 +170,26 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Food"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Živilo ni bilo najdeno.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -113,13 +197,14 @@
         }
       },
       "put": {
-        "tags": [
-          "Foods"
-        ],
+        "tags": ["Foods"],
+        "summary": "Posodobi obstoječe živilo.",
+        "description": "Sample request:\r\n            \r\n    PUT /Foods/675ed9ecdd35e38cb0c61281\r\n    {\r\n       \"Name\": \"Peanut Butter\",\r\n       \"Calories\": 588,\r\n       \"Protein\": 25,\r\n       \"Carbohydrates\": 20,\r\n       \"Fat\": 50,\r\n       \"ServingSize\": 100,\r\n       \"Unit\": \"g\",\r\n       \"Allergens\": [ \"Peanuts\", \"Soy\" ]\r\n    }",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID živila (dolžina 24 znakov).",
             "required": true,
             "schema": {
               "maxLength": 24,
@@ -132,35 +217,116 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Food"
+                "$ref": "#/components/schemas/FoodDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Food"
+                "$ref": "#/components/schemas/FoodDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Food"
+                "$ref": "#/components/schemas/FoodDto"
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Success"
+          "204": {
+            "description": "Živilo uspešno posodobljeno."
+          },
+          "400": {
+            "description": "Seznam živil je prazen ali ni veljaven.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Živilo ni bilo najdeno.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       },
       "delete": {
-        "tags": [
-          "Foods"
-        ],
+        "tags": ["Foods"],
+        "summary": "Izbriši živilo po ID-ju.",
+        "description": "Sample request:\r\n            \r\n    DELETE /Foods/675ed9ecdd35e38cb0c61281",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID živila (dolžina 24 znakov).",
             "required": true,
             "schema": {
               "maxLength": 24,
@@ -170,8 +336,410 @@
           }
         ],
         "responses": {
+          "204": {
+            "description": "Živilo uspešno izbrisano."
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Živilo ni bilo najdeno.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Foods/belowCalories": {
+      "get": {
+        "tags": ["Foods"],
+        "summary": "Poišči živila, ki imajo manj kalorij, kot je določen maksimum.",
+        "description": "Sample request:\r\n            \r\n    GET /Foods/belowCalories?maxCalories=500",
+        "parameters": [
+          {
+            "name": "maxCalories",
+            "in": "query",
+            "description": "Maksimalno število kalorij za iskanje živil z manj kalorijami.",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
           "200": {
-            "description": "Success"
+            "description": "Uspešno vrnjen seznam živil.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Food"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Food"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Food"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ni bilo najdenih živil, ki bi imela manj kalorij, kot je določeno.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Foods/excludedAllergens": {
+      "get": {
+        "tags": ["Foods"],
+        "summary": "Poišči živila, ki ne vsebujejo določenih alergenov.",
+        "description": "Sample request:\r\n            \r\n    GET /Foods/excludedAllergens?allergens=Soy",
+        "parameters": [
+          {
+            "name": "allergens",
+            "in": "query",
+            "description": "Seznam alergenov, ki jih živila ne smejo vsebovati.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Uspešno vrnjen seznam živil, ki ne vsebujejo alergenov.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Food"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Food"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Food"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ni bilo najdenih živil brez navedenih alergenov.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Foods/createMany": {
+      "post": {
+        "tags": ["Foods"],
+        "summary": "Ustvari več živil naenkrat.",
+        "description": "Sample request:\r\n            \r\n    POST /Foods/createMany\r\n    [\r\n        {\r\n           \"Name\": \"Peanut Butter\",\r\n           \"Calories\": 588,\r\n           \"Protein\": 25,\r\n           \"Carbohydrates\": 20,\r\n           \"Fat\": 50,\r\n           \"ServingSize\": 100,\r\n           \"Unit\": \"g\",\r\n           \"Allergens\": [ \"Peanuts\", \"Soy\" ]\r\n        },\r\n        {\r\n           \"Name\": \"Apple\",\r\n           \"Calories\": 95,\r\n           \"Protein\": 0.5,\r\n           \"Carbohydrates\": 25,\r\n           \"Fat\": 0.3,\r\n           \"ServingSize\": 100,\r\n           \"Unit\": \"g\",\r\n           \"Allergens\": [ ]\r\n        },\r\n    ]",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FoodDto"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FoodDto"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FoodDto"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Uspešno ustvarjen seznam živil."
+          },
+          "400": {
+            "description": "Seznam živil je prazen ali ni veljaven.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Foods/deleteByName": {
+      "delete": {
+        "tags": ["Foods"],
+        "summary": "Izbriši živila glede na ime.",
+        "description": "Sample request:\r\n            \r\n    DELETE /Foods/deleteByName?name=Peanut butter",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Ime živila za brisanje.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Uspešno izbrisano določeno število živil."
+          },
+          "400": {
+            "description": "Parameter ime ni določen ali je prazen.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Uporabnik ni pooblaščen za dostop.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Uporabnik nima zadostnih dovoljenj za dostop do tega vira.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ni bilo najdenih živil za brisanje.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -207,8 +775,8 @@
             "format": "double"
           },
           "ServingSize": {
-            "type": "string",
-            "nullable": true
+            "type": "integer",
+            "format": "int32"
           },
           "Unit": {
             "type": "string",
@@ -223,7 +791,88 @@
           }
         },
         "additionalProperties": false
+      },
+      "FoodDto": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Calories": {
+            "type": "number",
+            "format": "double"
+          },
+          "Protein": {
+            "type": "number",
+            "format": "double"
+          },
+          "Carbohydrates": {
+            "type": "number",
+            "format": "double"
+          },
+          "Fat": {
+            "type": "number",
+            "format": "double"
+          },
+          "ServingSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "Unit": {
+            "type": "string",
+            "nullable": true
+          },
+          "Allergens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": {}
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Enter your valid JWT token below.",
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
       }
     }
-  }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ]
 }
