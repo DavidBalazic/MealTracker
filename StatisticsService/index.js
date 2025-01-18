@@ -1,5 +1,17 @@
 const express = require("express");
+const cors = require("cors");
+
 const app = express();
+
+// Enable CORS
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://statisticsservice.onrender.com"], // Replace with your frontend's URL
+    methods: ["GET", "POST"], // Allowed HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+  })
+);
+
 app.use(express.json());
 
 // Endpoint to calculate statistics
