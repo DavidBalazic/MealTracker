@@ -15,6 +15,7 @@ import {
   Food,
 } from "../../ClientGenerator/generated/MealTrackerClient/models";
 import { ObjectId } from "bson";
+import { logUserAction } from "../../lib/utils";
 
 interface CreateMealProps {
   onMealPlanCreated: () => Promise<void>;
@@ -128,6 +129,13 @@ const CreateMeal: React.FC<CreateMealProps> = ({ onMealPlanCreated }) => {
       await mealTrackerApi.apiMealTrackerMealplanPost({
         mealPlan: newMealPlan,
       });
+
+      // Log user action
+      logUserAction("CREATE_MEAL_PLAN", {
+        mealPlanId: newMealPlan.id,
+        mealPlanName: meals.map((meal) => meal.name).join(", "),
+      });
+
       alert("Meal plan created successfully!");
       await onMealPlanCreated();
       setOpen(false);

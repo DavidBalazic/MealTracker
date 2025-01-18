@@ -14,6 +14,7 @@ import {
   MealPlan,
   Meal,
 } from "../../ClientGenerator/generated/MealTrackerClient/models";
+import { logUserAction } from "../../lib/utils";
 
 interface EditMealProps {
   mealPlan: MealPlan;
@@ -45,6 +46,16 @@ const EditMeal: React.FC<EditMealProps> = ({
         id: mealPlan.id!,
         mealPlan: updatedMealPlan,
       });
+
+      // Log user action
+      logUserAction("EDIT_MEAL_PLAN", {
+        mealPlanId: updatedMealPlan.id,
+        updatedMeals: meals.map((meal) => ({
+          name: meal.name,
+          calories: meal.calories,
+        })),
+      });
+
       alert("Meal plan updated successfully!");
       await onMealPlanUpdated();
       onClose();
