@@ -1,6 +1,7 @@
 ﻿using FoodService.DTOs;
 using FoodService.Models;
 using FoodService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodService.Controllers
@@ -22,6 +23,7 @@ namespace FoodService.Controllers
         /// <returns>Seznam živil.</returns>
         /// <response code="200">Seznam uspešno pridobljen.</response>
         /// <response code="500">Napaka na strežniku.</response>
+        [Authorize]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -40,6 +42,7 @@ namespace FoodService.Controllers
         /// </remarks>
         /// <response code="200">Podatki uspešno pridobljeni.</response>
         /// <response code="404">Živilo ni bilo najdeno.</response>
+        [Authorize]
         [HttpGet("{id:length(24)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -63,6 +66,7 @@ namespace FoodService.Controllers
         /// </remarks>
         /// <response code="200">Uspešno vrnjen seznam živil.</response>
         /// <response code="404">Ni bilo najdenih živil, ki bi imela manj kalorij, kot je določeno.</response>
+        [Authorize]
         [HttpGet("belowCalories")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -91,6 +95,7 @@ namespace FoodService.Controllers
         /// </remarks>
         /// <response code="200">Uspešno vrnjen seznam živil, ki ne vsebujejo alergenov.</response>
         /// <response code="404">Ni bilo najdenih živil brez navedenih alergenov.</response>
+        [Authorize]
         [HttpGet("excludedAllergens")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -129,6 +134,7 @@ namespace FoodService.Controllers
         /// </remarks>
         /// <response code="201">Živilo uspešno ustvarjeno.</response>
         /// <response code="400">Neveljavni podatki.</response>
+        [Authorize(Roles = "admin")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -191,6 +197,7 @@ namespace FoodService.Controllers
         /// </remarks>
         /// <response code="201">Uspešno ustvarjen seznam živil.</response>
         /// <response code="400">Seznam živil je prazen ali ni veljaven.</response>
+        [Authorize(Roles = "admin")]
         [HttpPost("createMany")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -243,6 +250,7 @@ namespace FoodService.Controllers
         /// <response code="204">Živilo uspešno posodobljeno.</response>
         /// <response code="404">Živilo ni bilo najdeno.</response>
         /// <response code="400">Seznam živil je prazen ali ni veljaven.</response>
+        [Authorize(Roles = "admin")]
         [HttpPut("{id:length(24)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -283,6 +291,7 @@ namespace FoodService.Controllers
         /// </remarks>
         /// <response code="204">Živilo uspešno izbrisano.</response>
         /// <response code="404">Živilo ni bilo najdeno.</response>
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id:length(24)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -308,6 +317,7 @@ namespace FoodService.Controllers
         /// <response code="200">Uspešno izbrisano določeno število živil.</response>
         /// <response code="400">Parameter ime ni določen ali je prazen.</response>
         /// <response code="404">Ni bilo najdenih živil za brisanje.</response>
+        [Authorize(Roles = "admin")]
         [HttpDelete("deleteByName")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

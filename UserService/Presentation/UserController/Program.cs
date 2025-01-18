@@ -47,7 +47,7 @@ internal class Program
                 Scheme = "Bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "Enter 'Bearer' [space] and then your valid token in the text input below."
+                Description = "Enter your valid JWT token below."
             });
 
             // Require Bearer token for secured endpoints
