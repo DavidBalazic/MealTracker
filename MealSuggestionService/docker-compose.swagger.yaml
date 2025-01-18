@@ -1,0 +1,8 @@
+services:
+  mealsuggestion-service-build-swagger:
+    build:
+      context: .
+    container_name: mealsuggestion_service_build_swagger
+    command: ["node", "./utils/swagger.js"]
+    volumes: 
+      - ./swagger.json:/usr/src/app/swagger.json

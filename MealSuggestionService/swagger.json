@@ -1,0 +1,494 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Meal Suggestion Service",
+    "description": "A microservice for sugggesting recipes to users within the FOOD TRACKER project.",
+    "version": "1.0.0"
+  },
+  "host": "<domain pending>",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/api/user/{userId}": {
+      "get": {
+        "tags": [
+          "Meal Suggestions"
+        ],
+        "summary": "Get all meal suggestions",
+        "description": "Get all meal suggestions",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          },
+          {
+            "name": "jwtToken",
+            "in": "body",
+            "description": "jwt token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "liked",
+            "description": "Filter by liked status",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meal suggestions retrieved successfully",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "example": "60f1b3b3b3b3b3b3b3b3b3b3"
+                  },
+                  "recipeId": {
+                    "type": "string",
+                    "example": "ijfds8j5dlklkfadlkafdslk5"
+                  },
+                  "recipeName": {
+                    "type": "string",
+                    "example": "Chicken with rice and goodies"
+                  },
+                  "recipeTags": {
+                    "type": "string",
+                    "example": "chicken, rice, vegetables"
+                  },
+                  "liked": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "example": "2021-07-17T12:00:00.000Z"
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid jwt token"
+          },
+          "404": {
+            "description": "Meal suggestions not found for user or user has no liked meals"
+          },
+          "500": {
+            "description": "Failed to fetch meal suggestions"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Meal Suggestions"
+        ],
+        "summary": "Delete all meal suggestions for user",
+        "description": "Delete all meal suggestions for user",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          },
+          {
+            "name": "jwtToken",
+            "in": "body",
+            "description": "jwt token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All meal suggestions deleted successfully"
+          },
+          "401": {
+            "description": "Invalid jwt token"
+          },
+          "500": {
+            "description": "Failed to delete meal suggestions"
+          }
+        }
+      }
+    },
+    "/api/{suggestionId}": {
+      "get": {
+        "tags": [
+          "Meal Suggestions"
+        ],
+        "summary": "Find meal suggestion by ID",
+        "description": "Find meal suggestion by ID",
+        "parameters": [
+          {
+            "name": "suggestionId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Suggestion ID"
+          },
+          {
+            "name": "jwtToken",
+            "in": "body",
+            "description": "jwt token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meal suggestion retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "gfdskjgfdskjafdsjkfdsgf"
+                },
+                "userId": {
+                  "type": "string",
+                  "example": "60f1b3b3b3b3b3b3b3b3b3b3"
+                },
+                "recipeId": {
+                  "type": "string",
+                  "example": "ijfds8j5dlklkfadlkafdslk5"
+                },
+                "recipeName": {
+                  "type": "string",
+                  "example": "Chicken with rice and goodies"
+                },
+                "recipeTags": {
+                  "type": "string",
+                  "example": "chicken, rice, vegetables"
+                },
+                "liked": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "timestamp": {
+                  "type": "string",
+                  "example": "2021-07-17T12:00:00.000Z"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid jwt token"
+          },
+          "404": {
+            "description": "Meal suggestion not found"
+          },
+          "500": {
+            "description": "Failed to fetch meal suggestion"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Meal Suggestions"
+        ],
+        "summary": "Delete meal suggestion by ID",
+        "description": "Delete meal suggestion by ID",
+        "parameters": [
+          {
+            "name": "suggestionId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Suggestion ID"
+          },
+          {
+            "name": "jwtToken",
+            "in": "body",
+            "description": "jwt token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meal suggestion deleted successfully"
+          },
+          "401": {
+            "description": "Invalid jwt token"
+          },
+          "404": {
+            "description": "Meal suggestion not found"
+          },
+          "500": {
+            "description": "Failed to delete meal suggestion"
+          }
+        }
+      }
+    },
+    "/api/": {
+      "post": {
+        "tags": [
+          "Meal Suggestions"
+        ],
+        "summary": "Create meal suggestion for user",
+        "description": "Create meal suggestion for user",
+        "parameters": [
+          {
+            "name": "jwtToken",
+            "in": "body",
+            "description": "jwt token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "userId",
+            "description": "User ID",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "60f1b3b3b3b3b3b3b3b3b3b3"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Meal suggestion saved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "gfdskjgfdskjafdsjkfdsgf"
+                },
+                "userId": {
+                  "type": "string",
+                  "example": "60f1b3b3b3b3b3b3b3b3b3b3"
+                },
+                "recipeId": {
+                  "type": "string",
+                  "example": "ijfds8j5dlklkfadlkafdslk5"
+                },
+                "recipeName": {
+                  "type": "string",
+                  "example": "Chicken with rice and goodies"
+                },
+                "recipeTags": {
+                  "type": "string",
+                  "example": "chicken, rice, vegetables"
+                },
+                "liked": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "timestamp": {
+                  "type": "string",
+                  "example": "2021-07-17T12:00:00.000Z"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Invalid jwt token"
+          },
+          "500": {
+            "description": "Failed to save meal suggestion"
+          }
+        }
+      }
+    },
+    "/api/custom": {
+      "post": {
+        "tags": [
+          "Meal Suggestions"
+        ],
+        "summary": "Create custom meal suggestion",
+        "description": "Create custom meal suggestion",
+        "parameters": [
+          {
+            "name": "jwtToken",
+            "in": "body",
+            "description": "jwt token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          {
+            "name": "userId",
+            "description": "User ID",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "60f1b3b3b3b3b3b3b3b3b3b3"
+            }
+          },
+          {
+            "name": "recipeId",
+            "description": "Recipe ID",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "ijfds8j5dlklkfadlkafdslk5"
+            }
+          },
+          {
+            "name": "recipeName",
+            "description": "Recipe name",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Chicken with rice and goodies"
+            }
+          },
+          {
+            "name": "recipeTags",
+            "description": "Recipe tags",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "chicken, rice, vegetables"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Custom meal suggestion saved successfully"
+          },
+          "400": {
+            "description": "Missing required fields: userId, recipeId, recipeName,"
+          },
+          "401": {
+            "description": "Invalid jwt token"
+          },
+          "500": {
+            "description": "Failed to save custom meal suggestion"
+          }
+        }
+      }
+    },
+    "/api/like/{suggestionId}": {
+      "put": {
+        "tags": [
+          "Meal Suggestions"
+        ],
+        "summary": "Like meal suggestion by ID",
+        "description": "Like meal suggestion by ID",
+        "parameters": [
+          {
+            "name": "suggestionId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Suggestion ID"
+          },
+          {
+            "name": "jwtToken",
+            "in": "body",
+            "description": "jwt token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meal liked"
+          },
+          "401": {
+            "description": "Invalid jwt token"
+          },
+          "404": {
+            "description": "Meal suggestion not found"
+          },
+          "500": {
+            "description": "Failed to like meal suggestion"
+          }
+        }
+      }
+    },
+    "/api/unlike/{suggestionId}": {
+      "put": {
+        "tags": [
+          "Meal Suggestions"
+        ],
+        "summary": "Unlike meal suggestion by ID",
+        "description": "Unlike meal suggestion by ID",
+        "parameters": [
+          {
+            "name": "suggestionId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Suggestion ID"
+          },
+          {
+            "name": "jwtToken",
+            "in": "body",
+            "description": "jwt token",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meal liked"
+          },
+          "401": {
+            "description": "Invalid jwt token"
+          },
+          "404": {
+            "description": "Meal suggestion not found"
+          },
+          "500": {
+            "description": "Failed to unlike meal suggestion"
+          }
+        }
+      }
+    }
+  }
+}

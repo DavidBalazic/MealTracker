@@ -1,0 +1,7 @@
+services:
+
+  notification-service-build-swagger:
+    build:
+      context: .
+    container_name: notification_service_build_swagger
+    command: ["node", "./utils/swagger.js"]

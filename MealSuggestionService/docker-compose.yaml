@@ -1,0 +1,31 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mealsuggestionservice_mongodb
+    volumes:
+      - mealsuggestionservice-mongo-data:/data/db
+    networks:
+      - mealsuggestionservice-network
+
+  mealsuggestion-service:
+    build:
+      context: .
+    container_name: mealsuggestion_service
+    ports:
+      - "3002:3002"
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/mealsuggestion-service
+      - PORT=3002
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/usr/src/app
+    networks:
+      - mealsuggestionservice-network
+
+volumes:
+  mealsuggestionservice-mongo-data:
+
+networks:
+  mealsuggestionservice-network:
+    driver: bridge

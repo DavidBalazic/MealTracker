@@ -1,0 +1,36 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: notificationservice_mongodb
+    # ports:
+    #   - "27017:27017"
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: root
+    #   MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - notificationservice-mongo-data:/data/db
+    networks:
+      - notificationservice-network
+
+  notification-service:
+    build:
+      context: .
+    container_name: notification_service
+    ports:
+      - "3001:3000"
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/notification-service
+      - PORT=3000
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/usr/src/app
+    networks:
+      - notificationservice-network
+
+volumes:
+  notificationservice-mongo-data:
+
+networks:
+  notificationservice-network:
+    driver: bridge
