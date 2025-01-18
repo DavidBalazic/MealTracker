@@ -22,12 +22,10 @@ namespace FoodService.Controllers
         /// </summary>
         /// <returns>Seznam živil.</returns>
         /// <response code="200">Seznam uspešno pridobljen.</response>
-        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
         /// <response code="500">Napaka na strežniku.</response>
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<Food>>> GetAll() => await _foodService.GetAllAsync();
 
@@ -43,12 +41,10 @@ namespace FoodService.Controllers
         ///
         /// </remarks>
         /// <response code="200">Podatki uspešno pridobljeni.</response>
-        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
         /// <response code="404">Živilo ni bilo najdeno.</response>
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet("{id:length(24)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Food>> Get(string id)
         {
@@ -69,12 +65,10 @@ namespace FoodService.Controllers
         ///
         /// </remarks>
         /// <response code="200">Uspešno vrnjen seznam živil.</response>
-        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
         /// <response code="404">Ni bilo najdenih živil, ki bi imela manj kalorij, kot je določeno.</response>
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet("belowCalories")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<List<Food>>> GetByMaxCalories([FromQuery] double maxCalories)
         {
@@ -100,12 +94,10 @@ namespace FoodService.Controllers
         ///
         /// </remarks>
         /// <response code="200">Uspešno vrnjen seznam živil, ki ne vsebujejo alergenov.</response>
-        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
         /// <response code="404">Ni bilo najdenih živil brez navedenih alergenov.</response>
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet("excludedAllergens")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<List<Food>>> GetByExcludedAllergens([FromQuery] List<string> allergens)
         {
