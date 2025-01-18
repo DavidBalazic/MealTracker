@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RecipeService.Dtos;
 using RecipeService.Integration;
 using RecipeService.Models;
@@ -26,8 +27,10 @@ namespace RecipeService.Controllers
         /// <returns>Seznam Receptov.</returns>
         /// <response code="200">Seznam uspešno pridobljen.</response>
         /// <response code="500">Napaka na strežniku.</response>
+        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<Recipe>>> GetAll() => await _recipeService.GetAsync();
 
         /// <summary>
@@ -43,6 +46,7 @@ namespace RecipeService.Controllers
         /// </remarks>
         /// <response code="200">Podatki uspešno pridobljeni.</response>
         /// <response code="404">Recept ni bil najden.</response>
+        [AllowAnonymous]
         [HttpGet("{id:length(24)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -66,6 +70,7 @@ namespace RecipeService.Controllers
         /// </remarks>
         /// <response code="200">Seznam receptov uspešno pridobljen.</response>
         /// <response code="404">Recepti z dano oznako niso bili najdeni.</response>
+        [AllowAnonymous]
         [HttpGet("byTag")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -94,6 +99,7 @@ namespace RecipeService.Controllers
         /// </remarks>
         /// <response code="200">Seznam receptov uspešno pridobljen.</response>
         /// <response code="404">Recepti z manj kalorijami od določene vrednosti niso bili najdeni.</response>
+        [AllowAnonymous]
         [HttpGet("belowCalories")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -142,9 +148,14 @@ namespace RecipeService.Controllers
         /// </remarks>
         /// <response code="201">Recept uspešno ustvarjen.</response>
         /// <response code="400">Sestavina ne obstaja.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
+        [Authorize(Roles = "admin")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> Post([FromBody] RecipeRequestDto recipeRequest)
         {
             var recipe = new Recipe
@@ -224,9 +235,14 @@ namespace RecipeService.Controllers
         /// </remarks>
         /// <response code="201">Recepti so bili uspešno ustvarjeni.</response>
         /// <response code="400">Seznam receptov je prazen ali sestavina ne obstaja.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
+        [Authorize(Roles = "admin")]
         [HttpPost("createMany")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> PostMany([FromBody] List<RecipeRequestDto> recipeRequests)
         {
             if (recipeRequests == null || recipeRequests.Count == 0)
@@ -293,10 +309,15 @@ namespace RecipeService.Controllers
         /// <response code="204">Recept je bil uspešno posodobljen.</response>
         /// <response code="404">Recept z navedenim ID-jem ni bil najden.</response>
         /// <response code="400">Podatki o receptu so napačni ali sestavina ne obstaja.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
+        [Authorize(Roles = "admin")]
         [HttpPut("{id:length(24)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Update(string id, [FromBody] RecipeRequestDto recipeRequest)
         {
             if (recipeRequest == null)
@@ -347,9 +368,14 @@ namespace RecipeService.Controllers
         /// </remarks>
         /// <response code="204">Oznake so bile uspešno posodobljene.</response>
         /// <response code="404">Recept z navedenim ID-jem ni bil najden.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
+        [Authorize(Roles = "admin")]
         [HttpPut("{id:length(24)}/updateTags")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> UpdateRecipeTags(string id, [FromBody] List<string> tags)
         {
             var existingRecipe = await _recipeService.GetAsync(id);
@@ -377,9 +403,14 @@ namespace RecipeService.Controllers
         /// </remarks>
         /// <response code="204">Recept je bil uspešno izbrisan.</response>
         /// <response code="404">Recept z navedenim ID-jem ni bil najden.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id:length(24)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Delete(string id)
         {
             var recipe = await _recipeService.GetAsync(id);
@@ -402,10 +433,15 @@ namespace RecipeService.Controllers
         /// <response code="200">Recepti so bili uspešno izbrisani.</response>
         /// <response code="400">Ime ni bilo podano ali je bilo prazno.</response>
         /// <response code="404">Recepti z določenim imenom niso bili najdeni.</response>
+        /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
+        /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
+        [Authorize(Roles = "admin")]
         [HttpDelete("deleteByName")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteByName([FromQuery] string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -420,7 +456,7 @@ namespace RecipeService.Controllers
                 return NotFound(new { Message = $"No recipes found with the exact name '{name}'." });
             }
 
-            return Ok(new { Message = $"{deleteResult.DeletedCount} food(s) deleted successfully." });
+            return Ok(new { Message = $"{deleteResult.DeletedCount} recipe(s) deleted successfully." });
         }
     }
 }
