@@ -14,12 +14,21 @@ interface IngredientWithFoodName extends Ingredient {
 
 interface RecipeWithEnrichedIngredients extends Recipe {
   ingredients: IngredientWithFoodName[]; // Use enriched ingredients
+  nutritionPerServing?: {
+    calories?: number;
+    protein?: number;
+    carbohydrates?: number;
+    fat?: number;
+  }; // Store nutrition per serving for each recipe
 }
 
 const Recipes: React.FC = () => {
   const [recipes, setRecipes] = useState<RecipeWithEnrichedIngredients[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadingNutritionId, setLoadingNutritionId] = useState<string | null>(
+    null
+  );
 
   // Fetch recipes and enrich with food names
   const fetchRecipes = async () => {
@@ -68,6 +77,49 @@ const Recipes: React.FC = () => {
       setError("Failed to load recipes. Please try again later.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch nutrition per serving for a specific recipe
+  const fetchNutritionPerServing = async (recipeId: string) => {
+    try {
+      setLoadingNutritionId(recipeId); // Set loading state for the specific recipe
+
+      const perServingResponse = await recipeApi.apiRecipesPerServingIdGet({
+        id: recipeId,
+      });
+
+      console.log(
+        `Nutrition per serving for recipe ${recipeId}:`,
+        perServingResponse.NutritionPerServing
+      );
+
+      // Transform the fetched nutrition data to match the expected interface
+      const nutritionPerServing = {
+        calories: perServingResponse.NutritionPerServing.Calories,
+        protein: perServingResponse.NutritionPerServing.Protein,
+        carbohydrates: perServingResponse.NutritionPerServing.Carbohydrates,
+        fat: perServingResponse.NutritionPerServing.Fat,
+      };
+
+      // Update the specific recipe with fetched nutrition
+      setRecipes((prevRecipes) =>
+        prevRecipes.map((recipe) =>
+          recipe.id === recipeId
+            ? {
+                ...recipe,
+                nutritionPerServing,
+              }
+            : recipe
+        )
+      );
+    } catch (err) {
+      console.error(
+        `Failed to fetch per-serving nutrition for recipe ${recipeId}:`,
+        err
+      );
+    } finally {
+      setLoadingNutritionId(null); // Reset loading state
     }
   };
 
@@ -124,27 +176,33 @@ const Recipes: React.FC = () => {
                 </ul>
               </div>
 
-              {/* Servings */}
-              <p className="text-sm text-gray-500 mb-2">
-                Servings: {recipe.servings}
-              </p>
+              {/* Nutrition Per Serving */}
+              {recipe.nutritionPerServing && (
+                <div className="mb-2">
+                  <h3 className="text-sm font-semibold text-gray-600">
+                    Nutrition Per Serving:
+                  </h3>
+                  <ul className="text-gray-500">
+                    <li>Calories: {recipe.nutritionPerServing.calories}</li>
+                    <li>Protein: {recipe.nutritionPerServing.protein}</li>
+                    <li>
+                      Carbohydrates: {recipe.nutritionPerServing.carbohydrates}
+                    </li>
+                    <li>Fat: {recipe.nutritionPerServing.fat}</li>
+                  </ul>
+                </div>
+              )}
 
-              {/* Instructions */}
-              <p className="text-sm text-gray-500 mb-2">
-                Instructions: {recipe.instructions}
-              </p>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1">
-                {recipe.tags?.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              {/* Fetch Nutrition Button */}
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
+                onClick={() => fetchNutritionPerServing(recipe.id!)}
+                disabled={loadingNutritionId === recipe.id}
+              >
+                {loadingNutritionId === recipe.id
+                  ? "Fetching Nutrition..."
+                  : "Fetch Nutrition Per Serving"}
+              </button>
             </CardContent>
           </Card>
         ))}

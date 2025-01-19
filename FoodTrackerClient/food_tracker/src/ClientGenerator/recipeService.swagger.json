@@ -860,6 +860,52 @@
           }
         }
       }
+    },
+    "/api/Recipes/per-serving/{id}": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Pridobi obdelane prehranske informacije za recept.",
+        "description": "Primer zahteve:\r\n            \r\n    GET /per-serving/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Edinstveni identifikator recepta.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prehranske informacije so bile uspešno pridobljene."
+          },
+          "404": {
+            "description": "Recept ni bil najden.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Napaka pri obdelavi prehranskih podatkov."
+          }
+        }
+      }
     }
   },
   "components": {

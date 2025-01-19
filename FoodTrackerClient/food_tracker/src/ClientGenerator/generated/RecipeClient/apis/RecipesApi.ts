@@ -62,6 +62,10 @@ export interface ApiRecipesIdUpdateTagsPutRequest {
     requestBody?: Array<string>;
 }
 
+export interface ApiRecipesPerServingIdGetRequest {
+    id: string;
+}
+
 export interface ApiRecipesPostRequest {
     recipeRequestDto?: RecipeRequestDto;
 }
@@ -437,6 +441,88 @@ export class RecipesApi extends runtime.BaseAPI {
         await this.apiRecipesIdUpdateTagsPutRaw(requestParameters, initOverrides);
     }
 
+    /**
+     * Primer zahteve:                    GET /per-serving/{id}
+     * Pridobi obdelane prehranske informacije za recept.
+     */
+    async apiRecipesPerServingIdGetRaw(requestParameters: ApiRecipesPerServingIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling apiRecipesPerServingIdGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Recipes/per-serving/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Primer zahteve:                    GET /per-serving/{id}
+     * Pridobi obdelane prehranske informacije za recept.
+     */
+    async apiRecipesPerServingIdGet(
+        requestParameters: ApiRecipesPerServingIdGetRequest,
+        initOverrides?: RequestInit | runtime.InitOverrideFunction
+      ): Promise<{
+        Name: string;
+        TotalNutrition: {
+          Calories: number;
+          Protein: number;
+          Carbohydrates: number;
+          Fat: number;
+        };
+        NutritionPerServing: {
+          Calories: number;
+          Protein: number;
+          Carbohydrates: number;
+          Fat: number;
+        };
+        Tags: string[];
+      }> {
+        if (requestParameters.id == null) {
+          throw new runtime.RequiredError(
+            "id",
+            'Required parameter "id" was null or undefined when calling apiRecipesPerServingIdGet.'
+          );
+        }
+      
+        const headerParameters: runtime.HTTPHeaders = {
+          "Content-Type": "application/json", // Include the content type
+        };
+      
+        const response = await this.request(
+          {
+            path: `/api/Recipes/per-serving/${encodeURIComponent(
+              String(requestParameters.id)
+            )}`,
+            method: "GET",
+            headers: headerParameters, // Add headers here
+          },
+          initOverrides
+        );
+      
+        return await response.json(); // Parse and return the JSON response
+      }
+      
     /**
      * Sample request:                    POST /Recipes      {          \"name\": \"Smoothie\",          \"ingredients\": [              {                  \"foodId\": \"64b8f740d8234c12d481\",                  \"quantity\": 200              },              {                  \"foodId\": \"64b8f740d8234c12d481\",                  \"quantity\": 100              },              {                  \"foodId\": \"64b8f740d8234c12d481\",                  \"quantity\": 200              }          ],          \"servings\": 2,          \"instructions\": \"Mix apple, strawberry and milk\",          \"tags\": [ \"Smotohie\" ]      }
      * Ustvari nov recept.
