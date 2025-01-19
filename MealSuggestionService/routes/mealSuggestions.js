@@ -125,7 +125,7 @@ router.post("/", jwtValidationMiddleware, async (req, res) => {
 
     const mealSuggestion = new MealSuggestion({
       userId,
-      recipeId: suggestion.id,
+      recipeId: suggestion.recipeId,
       recipeName: suggestion.name,
       recipeTags: suggestion.tags.join(", "),
     });

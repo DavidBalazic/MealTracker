@@ -1,4 +1,5 @@
 require("dotenv").config();
+const validateToken = require("./dataFetcher").validateToken;
 
 async function jwtValidationMiddleware(req, res, next) {
   /*#swagger.tags = ['Middleware']

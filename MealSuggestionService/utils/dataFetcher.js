@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { recompileSchema } = require("../models/MealSuggestion");
 require("dotenv").config();
 
 // TODO implement, currently placeholder
@@ -28,6 +29,7 @@ const fetchFoodData = async (userId, jwtToken) => {
 const fetchRecipeData = async (jwtToken) => {
   return [
     {
+      recipeId: "1",
       name: "placeholder recipe",
       ingredients: [
         { foodId: "1", quantity: 1 },
@@ -40,6 +42,7 @@ const fetchRecipeData = async (jwtToken) => {
       tags: ["tag1", "tag2"],
     },
     {
+      recipeId: "2",
       name: "placeholder recipe 2",
       ingredients: [
         { foodId: "1", quantity: 1 },
