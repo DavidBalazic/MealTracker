@@ -1,8 +1,83 @@
-include:
-# Some env set in docker-compose.override.yaml
-  - ./MealSuggestionService/docker-compose.yaml 
-  - ./UserService/docker-compose.yml
+services:
+  userservice:
+    build:
+      context: ./UserService
+      dockerfile: Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AllowedOrigins__Frontend=http://frontend:3000
+    env_file: # Move as many env vars as possible to global.env (those that might get changed)
+      - global.env
+    networks:
+      - foodtracker-network
 
-#services:
-#  food-service:
-#etc...
+  foodservice:
+    build:
+      context: ./FoodService
+      dockerfile: Dockerfile
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AllowedOrigins__Frontend=http://frontend:3000
+    env_file: # Move as many env vars as possible to global.env (those that might get changed)
+      - global.env
+    networks:
+      - foodtracker-network
+
+  recipeservice:
+    build:
+      context: ./RecipeService
+      dockerfile: Dockerfile
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AllowedOrigins__Frontend=http://frontend:3000
+    env_file: # Move as many env vars as possible to global.env (those that might get changed)
+      - global.env
+    networks:
+      - foodtracker-network
+
+  mealtrackerservice:
+    build:
+      context: ./MealTrackerService
+      dockerfile: Dockerfile
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoSettings__DatabaseName=MealTrackerDatabase
+      - AllowedOrigins__Frontend=http://frontend:3000
+    env_file: # Move as many env vars as possible to global.env (those that might get changed)
+      - global.env
+    networks:
+      - foodtracker-network
+
+  frontend:
+    build:
+      context: ./FoodTrackerClient/food_tracker
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_MEAL_TRACKER_SERVICE_URL=http://mealtrackerservice:8080
+      - REACT_APP_FOOD_SERVICE_URL=http://foodservice:8080
+      - REACT_APP_RECIPE_SERVICE_URL=http://recipeservice:8080
+      - REACT_APP_USER_SERVICE_URL=http://userservice:8080
+      - REACT_APP_URL=http://localhost:3000
+      - MONGO_DATABASE_NAME=soa_db
+    env_file: # Move as many env vars as possible to global.env (those that might get changed)
+      - global.env
+    networks:
+      - foodtracker-network
+
+networks:
+  foodtracker-network:
+    name: foodtracker-network
+
+include:
+  # Some env set in docker-compose.override.yaml
+  - ./MealSuggestionService/docker-compose.yaml

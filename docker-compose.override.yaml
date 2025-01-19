@@ -1,7 +1,11 @@
 services:
   mealsuggestion-service:
+    networks:
+      - foodtracker-network
+      - mealsuggestionservice-network
     env_file:
       - global.env
-  userservice:
-    env_file:
-      - global.env
+
+networks:
+  mealsuggestionservice-network:
+    driver: bridge
