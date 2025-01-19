@@ -16,11 +16,7 @@ services:
     environment:
       - MONGO_URL=mongodb://mongodb:27017/mealsuggestion-service
       - PORT=3002
-      - USER_SERVICE_URL=https://localhost:7073
-      - FOOD_SERVICE_URL=https://localhost:7162
-      - RECIPE_SERVICE_URL=https://localhost:7280
-      - MEAL_TRACKER_SERVICE_URL=https://localhost:7077
-      - INSECURE_ACCESS=true
+      - INSECURE_ACCESS=false
     depends_on:
       - mongodb
     volumes:
