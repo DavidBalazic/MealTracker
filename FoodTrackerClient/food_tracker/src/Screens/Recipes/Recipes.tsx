@@ -6,6 +6,11 @@ import {
   Ingredient,
 } from "../../ClientGenerator/generated/RecipeClient/models";
 import { Food } from "../../ClientGenerator/generated/FoodServiceClient/models";
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Extend Ingredient type to include foodName
 interface IngredientWithFoodName extends Ingredient {
@@ -19,7 +24,7 @@ interface RecipeWithEnrichedIngredients extends Recipe {
     protein?: number;
     carbohydrates?: number;
     fat?: number;
-  }; // Store nutrition per serving for each recipe
+  }; // Add nutritionPerServing to each recipe
 }
 
 const Recipes: React.FC = () => {
@@ -80,7 +85,6 @@ const Recipes: React.FC = () => {
     }
   };
 
-  // Fetch nutrition per serving for a specific recipe
   const fetchNutritionPerServing = async (recipeId: string) => {
     try {
       setLoadingNutritionId(recipeId); // Set loading state for the specific recipe
@@ -182,14 +186,27 @@ const Recipes: React.FC = () => {
                   <h3 className="text-sm font-semibold text-gray-600">
                     Nutrition Per Serving:
                   </h3>
-                  <ul className="text-gray-500">
-                    <li>Calories: {recipe.nutritionPerServing.calories}</li>
-                    <li>Protein: {recipe.nutritionPerServing.protein}</li>
-                    <li>
-                      Carbohydrates: {recipe.nutritionPerServing.carbohydrates}
-                    </li>
-                    <li>Fat: {recipe.nutritionPerServing.fat}</li>
-                  </ul>
+                  <Pie
+                    data={{
+                      labels: ["Calories", "Protein", "Carbohydrates", "Fat"],
+                      datasets: [
+                        {
+                          data: [
+                            recipe.nutritionPerServing.calories,
+                            recipe.nutritionPerServing.protein,
+                            recipe.nutritionPerServing.carbohydrates,
+                            recipe.nutritionPerServing.fat,
+                          ],
+                          backgroundColor: [
+                            "#FF6384",
+                            "#36A2EB",
+                            "#FFCE56",
+                            "#4BC0C0",
+                          ],
+                        },
+                      ],
+                    }}
+                  />
                 </div>
               )}
 
