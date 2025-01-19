@@ -7,12 +7,12 @@ const fetchFoodData = async (userId, jwtToken) => {
   return [
     {
       foodId: "1",
-      name: "food1"
+      name: "food1",
     },
     {
       foodId: "2",
-      name: "food2"
-    }
+      name: "food2",
+    },
   ];
   try {
     const response = await axios.get(
@@ -53,7 +53,7 @@ const fetchRecipeData = async (jwtToken) => {
       },
       servings: 2,
       tags: ["tag3", "tag4"],
-    }
+    },
   ];
   try {
     const response = await axios.get(
@@ -82,7 +82,7 @@ const fetchUserCalorieGoal = async (userId, jwtToken) => {
     console.error("Error fetching user calorie goal:", err);
     throw new Error("Failed to fetch user calorie goal");
   }
-}
+};
 
 const validateToken = async (jwtToken) => {
   {
