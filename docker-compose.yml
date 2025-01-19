@@ -62,7 +62,7 @@ services:
       context: ./FoodTrackerClient/food_tracker
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3000:80"
     environment:
       - MONGO_CONNECTION_STRING=${MONGODB_CONNECTION_STRING}
       - REACT_APP_MEAL_TRACKER_SERVICE_URL=http://mealtrackerservice:8080
