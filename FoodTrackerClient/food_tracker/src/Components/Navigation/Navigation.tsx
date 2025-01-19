@@ -53,6 +53,14 @@ const Navigation: React.FC<NavigationProps> = ({
                   Recipes
                 </Link>
               </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link
+                  to="/meal-suggestions"
+                  className="hover:bg-gray-100 hover:rounded-md px-3 py-2 text-sm font-medium transition-all"
+                >
+                  Meal Suggestions
+                </Link>
+              </NavigationMenuItem>
             </>
           )}
           <NavigationMenuItem>

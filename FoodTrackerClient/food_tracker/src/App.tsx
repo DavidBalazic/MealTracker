@@ -14,11 +14,12 @@ import Signin from "src/Screens/Signin/Signin";
 import Signup from "src/Screens/Signin/Signup";
 import Footer from "./Components/Footer/Footer";
 import About from "src/Screens/About/About";
+import MealSuggestions from "src/Screens/MealSuggestion/MealSuggestion";
 import { userApi } from "./lib/axios";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Handle loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const validateToken = async () => {
@@ -33,7 +34,7 @@ function App() {
           setIsAuthenticated(false);
         }
       }
-      setIsLoading(false); // Token validation complete
+      setIsLoading(false);
     };
     validateToken();
   }, []);
@@ -49,7 +50,7 @@ function App() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>; // Show a loading indicator while validating
+    return <div>Loading...</div>;
   }
 
   return (
@@ -105,6 +106,16 @@ function App() {
               element={
                 isAuthenticated ? (
                   <Recipes />
+                ) : (
+                  <Navigate to="/signin" replace />
+                )
+              }
+            />
+            <Route
+              path="/meal-suggestions"
+              element={
+                isAuthenticated ? (
+                  <MealSuggestions />
                 ) : (
                   <Navigate to="/signin" replace />
                 )
