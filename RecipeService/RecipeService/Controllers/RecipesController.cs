@@ -4,6 +4,7 @@ using RecipeService.Dtos;
 using RecipeService.Integration;
 using RecipeService.Models;
 using RecipeService.Services;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace RecipeService.Controllers
@@ -14,11 +15,13 @@ namespace RecipeService.Controllers
     {
         private readonly RecipesService _recipeService;
         private readonly FoodService _foodService;
+        private readonly NutritionService _nutritionService;
 
-        public RecipesController(RecipesService recipeService, FoodService foodService)
+        public RecipesController(RecipesService recipeService, FoodService foodService, NutritionService nutritionService)
         {
             _recipeService = recipeService;
             _foodService = foodService;
+            _nutritionService = nutritionService;
         }
 
         /// <summary>
@@ -457,6 +460,46 @@ namespace RecipeService.Controllers
             }
 
             return Ok(new { Message = $"{deleteResult.DeletedCount} recipe(s) deleted successfully." });
+        }
+
+        /// <summary>
+        /// Pridobi obdelane prehranske informacije za recept.
+        /// </summary>
+        /// <param name="id">Edinstveni identifikator recepta.</param>
+        /// <returns>Obdelane prehranske informacije za recept.</returns>
+        /// <remarks>
+        /// Primer zahteve:
+        ///
+        ///     GET /per-serving/{id}
+        ///
+        /// </remarks>
+        /// <response code="200">Prehranske informacije so bile uspešno pridobljene.</response>
+        /// <response code="404">Recept ni bil najden.</response>
+        /// <response code="500">Napaka pri obdelavi prehranskih podatkov.</response>
+        [HttpGet("per-serving/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProcessedRecipe(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return BadRequest(new { Message = "Invalid recipe ID provided." });
+            }
+
+            var recipe = await _recipeService.GetAsync(id);
+            if (recipe == null)
+            {
+                return NotFound(new { Message = "Recipe not found." });
+            }
+
+            var nutritionResponse = await _nutritionService.GetNutritionAsync(recipe);
+            if (nutritionResponse == null)
+            {
+                return StatusCode(500, new { Message = "Failed to process nutrition data." });
+            }
+
+            return Ok(nutritionResponse);
         }
     }
 }

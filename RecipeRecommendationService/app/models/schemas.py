@@ -10,12 +10,3 @@ class Nutrition(BaseModel):
 class Ingredient(BaseModel):
     FoodId: str
     Quantity: float 
-
-class Recipe(BaseModel):
-    Id: str
-    Name: str
-    Ingredients: List[Ingredient]
-    TotalNutrition: Nutrition
-    Servings: int
-    Instructions: str
-    Tags: List[str]

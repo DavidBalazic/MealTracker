@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using RecipeService.Models;
+using System.Net.Http;
 
 namespace RecipeService.Services
 {

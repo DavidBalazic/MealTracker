@@ -18,6 +18,14 @@ builder.Services.AddHttpClient<FoodService>((serviceProvider, client) =>
     client.BaseAddress = new Uri(baseAddress);
 });
 
+builder.Services.AddHttpClient<NutritionService>((serviceProvider, client) =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var baseAddress = configuration["Services:NutritionService:BaseAddress"];
+    client.BaseAddress = new Uri(baseAddress);
+});
+
+
 builder.Services.Configure<RecipeServiceDatabaseSettings>(options =>
 {
     options.ConnectionString = builder.Configuration["MongoDB:ConnectionString"];
