@@ -3,10 +3,22 @@ import { Card, CardContent } from "../../Components/ui/card";
 import { Input } from "../../Components/ui/input";
 import { Button } from "../../Components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { userApi } from "../../lib/axios"; // Assuming this is the generated API class.
+import { userApi } from "../../lib/axios";
+
+// JWT decoding function
+const decodeJwtToken = (token: string): { role: string } | null => {
+  try {
+    const payload = token.split(".")[1]; // Extract the payload part of the JWT
+    const decodedPayload = atob(payload); // Decode the Base64-encoded payload
+    return JSON.parse(decodedPayload); // Parse the payload into a JavaScript object
+  } catch (error) {
+    console.error("Failed to decode JWT token:", error);
+    return null;
+  }
+};
 
 interface SigninProps {
-  onSignin: (token: string) => void; // Pass the token to parent
+  onSignin: (token: string, role: string) => void; // Accept both token and role
 }
 
 const Signin: React.FC<SigninProps> = ({ onSignin }) => {
@@ -28,19 +40,26 @@ const Signin: React.FC<SigninProps> = ({ onSignin }) => {
 
       // Call the login endpoint using the generated API
       const response = await userApi.apiUsersLoginPostRaw({ loginDTO });
-
-      // Extract JSON data from the response
       const responseBody = await response.raw.json();
 
-      // Extract the token from the parsed JSON response
+      console.log("API Response Body:", responseBody); // Debug log
+
       const token = responseBody?.token;
 
       if (!token) {
-        throw new Error("No token received in the response");
+        throw new Error("Invalid token in response");
       }
 
-      // Pass the token to the parent component
-      onSignin(token);
+      // Decode the token to extract the role
+      const decoded = decodeJwtToken(token);
+      const role = decoded?.role;
+
+      if (!role) {
+        throw new Error("Role not found in token");
+      }
+
+      // Pass both token and role to the parent component
+      onSignin(token, role);
       alert("Signin successful!");
       navigate("/dashboard");
     } catch (error) {

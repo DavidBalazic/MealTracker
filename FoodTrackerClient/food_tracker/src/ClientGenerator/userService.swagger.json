@@ -9,7 +9,10 @@
     "/api/Users/register": {
       "post": {
         "tags": ["Users"],
+        "summary": "Registers a new user.",
+        "description": "Sample request:\r\n\r\n    POST /api/Users/register\r\n    {\r\n        \"email\": \"user@example.com\",\r\n        \"password\": \"StrongPassword123\"\r\n    }",
         "requestBody": {
+          "description": "The registration details, including email and password.",
           "content": {
             "application/json": {
               "schema": {
@@ -30,7 +33,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Successfully registered a new user, returning the UserId."
+          },
+          "400": {
+            "description": "Invalid request, including missing or malformed data.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -38,7 +61,10 @@
     "/api/Users/login": {
       "post": {
         "tags": ["Users"],
+        "summary": "Authenticates a user and returns a JWT token.",
+        "description": "Sample request:\r\n\r\n    POST /api/Users/login\r\n    {\r\n        \"email\": \"user@example.com\",\r\n        \"password\": \"StrongPassword123\"\r\n    }",
         "requestBody": {
+          "description": "The login details, including email and password.",
           "content": {
             "application/json": {
               "schema": {
@@ -59,7 +85,47 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Successfully authenticated the user and generated a token."
+          },
+          "400": {
+            "description": "Invalid request, including missing email or password.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed due to invalid credentials.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -67,7 +133,10 @@
     "/api/Users/update": {
       "put": {
         "tags": ["Users"],
+        "summary": "Updates the authenticated user's password or email.",
+        "description": "Sample request:\r\n            \r\n    PUT /api/Users/update\r\n    {\r\n        \"userId\": \"63f1e4d5e70b2f00123abcde\",\r\n        \"newEmail\": \"newemail@example.com\",\r\n        \"newPassword\": \"NewPassword123!\"\r\n    }\r\n            \r\nIf no `newEmail` or `newPassword` is provided, the respective fields will remain unchanged.",
         "requestBody": {
+          "description": "The user update details, including a new password or email.",
           "content": {
             "application/json": {
               "schema": {
@@ -88,7 +157,47 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Successfully updated the user's password or email."
+          },
+          "400": {
+            "description": "Invalid input, such as missing required fields or invalid values.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access, such as when the user is not authenticated.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -96,7 +205,10 @@
     "/api/Users/validate-token": {
       "post": {
         "tags": ["Users"],
+        "summary": "Validates the provided JWT token.",
+        "description": "Sample request:\r\n\r\n    POST /api/Users/validate-token\r\n    \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"",
         "requestBody": {
+          "description": "The JWT token to validate.",
           "content": {
             "application/json": {
               "schema": {
@@ -117,17 +229,27 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/Users/admin-only": {
-      "get": {
-        "tags": ["Users"],
-        "responses": {
-          "200": {
-            "description": "Success"
+            "description": "The token is successfully validated."
+          },
+          "401": {
+            "description": "Unauthorized access when the request lacks valid credentials.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -135,9 +257,351 @@
     "/api/Users/user-info": {
       "get": {
         "tags": ["Users"],
+        "summary": "Retrieves the authenticated user's information.",
+        "description": "This endpoint fetches information about the currently authenticated user based on their JWT token.\r\n\r\nSample response:\r\n\r\n    {\r\n        \"Message\": \"User Info\",\r\n        \"UserId\": \"63f1e4d5e70b2f00123abcde\",\r\n        \"Email\": \"user@example.com\",\r\n        \"Role\": \"admin\"\r\n    }",
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Successfully retrieved the user's information."
+          },
+          "401": {
+            "description": "Unauthorized access when the request lacks valid credentials.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users/delete-account": {
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Deletes the currently authenticated user's account.",
+        "description": "This endpoint allows the authenticated user to delete their account permanently.\r\n\r\nSample request:\r\n\r\n    DELETE /api/Users/delete-account",
+        "responses": {
+          "200": {
+            "description": "Account deleted successfully."
+          },
+          "401": {
+            "description": "Unauthorized if the user is not authenticated or the token is invalid.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request if an error occurs during the deletion process.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users/admin/delete-user/{id}": {
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Deletes a user by their ID. Accessible only by admins.",
+        "description": "Sample request:\r\n\r\n    DELETE /api/Users/admin/delete-user/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the user to delete.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully."
+          },
+          "400": {
+            "description": "Bad request if the user ID is invalid or an error occurs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the admin is not authenticated.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user does not have admin privileges.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users/admin/update-role/{id}": {
+      "put": {
+        "tags": ["Users"],
+        "summary": "Updates the role of a user by their ID. Accessible only by admins.",
+        "description": "Sample request:\r\n\r\n    PUT /api/Users/admin/update-role/{id}\r\n\r\nRequest body:\r\n\r\n    \"admin\"",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the user whose role is being updated.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The new role to assign to the user.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User role updated successfully."
+          },
+          "400": {
+            "description": "Bad request if the user ID or role is invalid.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the admin is not authenticated.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user does not have admin privileges.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Retrieves all users or filters users by role. Accessible only by admins.",
+        "description": "Sample request:\r\n\r\n    GET /api/Users?role=admin",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Optional role to filter users. If not provided, retrieves all users.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the list of users."
+          },
+          "400": {
+            "description": "Bad request if an error occurs during data retrieval.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the admin is not authenticated.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user does not have admin privileges.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -158,6 +622,33 @@
           }
         },
         "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": {}
       },
       "RegisterDTO": {
         "type": "object",
@@ -195,7 +686,7 @@
     "securitySchemes": {
       "Bearer": {
         "type": "http",
-        "description": "Enter 'Bearer' [space] and then your valid token in the text input below.",
+        "description": "Enter your valid JWT token below.",
         "scheme": "Bearer",
         "bearerFormat": "JWT"
       }

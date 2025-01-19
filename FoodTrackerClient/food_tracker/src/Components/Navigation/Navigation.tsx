@@ -8,11 +8,13 @@ import {
 
 interface NavigationProps {
   isAuthenticated: boolean;
+  userRole: string | null; // Include userRole
   onSignOut: () => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({
   isAuthenticated,
+  userRole,
   onSignOut,
 }) => {
   return (
@@ -61,6 +63,13 @@ const Navigation: React.FC<NavigationProps> = ({
                   Meal Suggestions
                 </Link>
               </NavigationMenuItem>
+              {userRole === "admin" && (
+                <NavigationMenuItem>
+                  <Link to="/admin" className="hover:bg-gray-100 px-3 py-2">
+                    Admin
+                  </Link>
+                </NavigationMenuItem>
+              )}
             </>
           )}
           <NavigationMenuItem>

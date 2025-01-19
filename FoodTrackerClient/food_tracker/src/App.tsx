@@ -15,10 +15,12 @@ import Signup from "src/Screens/Signin/Signup";
 import Footer from "./Components/Footer/Footer";
 import About from "src/Screens/About/About";
 import MealSuggestions from "src/Screens/MealSuggestion/MealSuggestion";
+import Admin from "src/Screens/Admin/Admin"; // New Admin Screen
 import { userApi } from "./lib/axios";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null); // Store user role
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -26,12 +28,19 @@ function App() {
       const token = sessionStorage.getItem("authToken");
       if (token) {
         try {
-          await userApi.apiUsersValidateTokenPostRaw({ body: token });
+          const response = await userApi.apiUsersValidateTokenPostRaw({
+            body: token,
+          });
+
+          const responseBody = await response.raw.json();
+
           setIsAuthenticated(true);
+          setUserRole(responseBody.role); // Set user role from response
         } catch (error) {
           console.error("Token validation failed:", error);
           sessionStorage.removeItem("authToken");
           setIsAuthenticated(false);
+          setUserRole(null);
         }
       }
       setIsLoading(false);
@@ -39,14 +48,16 @@ function App() {
     validateToken();
   }, []);
 
-  const handleSignin = (token: string) => {
+  const handleSignin = (token: string, role: string) => {
     sessionStorage.setItem("authToken", token);
     setIsAuthenticated(true);
+    setUserRole(role); // Set role on login
   };
 
   const handleSignOut = () => {
     sessionStorage.removeItem("authToken");
     setIsAuthenticated(false);
+    setUserRole(null); // Clear role on logout
   };
 
   if (isLoading) {
@@ -58,6 +69,7 @@ function App() {
       <div className="flex flex-col min-h-screen bg-gray-100">
         <Navigation
           isAuthenticated={isAuthenticated}
+          userRole={userRole}
           onSignOut={handleSignOut}
         />
         <div className="flex flex-col items-center justify-center flex-grow">
@@ -116,6 +128,16 @@ function App() {
               element={
                 isAuthenticated ? (
                   <MealSuggestions />
+                ) : (
+                  <Navigate to="/signin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                isAuthenticated && userRole === "admin" ? (
+                  <Admin />
                 ) : (
                   <Navigate to="/signin" replace />
                 )

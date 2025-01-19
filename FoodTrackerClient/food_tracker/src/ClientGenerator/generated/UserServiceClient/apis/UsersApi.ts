@@ -16,17 +16,33 @@
 import * as runtime from '../runtime';
 import type {
   LoginDTO,
+  ProblemDetails,
   RegisterDTO,
   UpdateDTO,
 } from '../models/index';
 import {
     LoginDTOFromJSON,
     LoginDTOToJSON,
+    ProblemDetailsFromJSON,
+    ProblemDetailsToJSON,
     RegisterDTOFromJSON,
     RegisterDTOToJSON,
     UpdateDTOFromJSON,
     UpdateDTOToJSON,
 } from '../models/index';
+
+export interface ApiUsersAdminDeleteUserIdDeleteRequest {
+    id: string;
+}
+
+export interface ApiUsersAdminUpdateRoleIdPutRequest {
+    id: string;
+    body?: string;
+}
+
+export interface ApiUsersGetRequest {
+    role?: string;
+}
 
 export interface ApiUsersLoginPostRequest {
     loginDTO?: LoginDTO;
@@ -50,8 +66,17 @@ export interface ApiUsersValidateTokenPostRequest {
 export class UsersApi extends runtime.BaseAPI {
 
     /**
+     * Sample request:        DELETE /api/Users/admin/delete-user/{id}
+     * Deletes a user by their ID. Accessible only by admins.
      */
-    async apiUsersAdminOnlyGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async apiUsersAdminDeleteUserIdDeleteRaw(requestParameters: ApiUsersAdminDeleteUserIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling apiUsersAdminDeleteUserIdDelete().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -65,7 +90,126 @@ export class UsersApi extends runtime.BaseAPI {
             }
         }
         const response = await this.request({
-            path: `/api/Users/admin-only`,
+            path: `/api/Users/admin/delete-user/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id']))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Sample request:        DELETE /api/Users/admin/delete-user/{id}
+     * Deletes a user by their ID. Accessible only by admins.
+     */
+    async apiUsersAdminDeleteUserIdDelete(requestParameters: ApiUsersAdminDeleteUserIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiUsersAdminDeleteUserIdDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Sample request:        PUT /api/Users/admin/update-role/{id}    Request body:        \"admin\"
+     * Updates the role of a user by their ID. Accessible only by admins.
+     */
+    async apiUsersAdminUpdateRoleIdPutRaw(requestParameters: ApiUsersAdminUpdateRoleIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling apiUsersAdminUpdateRoleIdPut().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Users/admin/update-role/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id']))),
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters['body'] as any,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Sample request:        PUT /api/Users/admin/update-role/{id}    Request body:        \"admin\"
+     * Updates the role of a user by their ID. Accessible only by admins.
+     */
+    async apiUsersAdminUpdateRoleIdPut(requestParameters: ApiUsersAdminUpdateRoleIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiUsersAdminUpdateRoleIdPutRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * This endpoint allows the authenticated user to delete their account permanently.    Sample request:        DELETE /api/Users/delete-account
+     * Deletes the currently authenticated user\'s account.
+     */
+    async apiUsersDeleteAccountDeleteRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Users/delete-account`,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * This endpoint allows the authenticated user to delete their account permanently.    Sample request:        DELETE /api/Users/delete-account
+     * Deletes the currently authenticated user\'s account.
+     */
+    async apiUsersDeleteAccountDelete(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiUsersDeleteAccountDeleteRaw(initOverrides);
+    }
+
+    /**
+     * Sample request:        GET /api/Users?role=admin
+     * Retrieves all users or filters users by role. Accessible only by admins.
+     */
+    async apiUsersGetRaw(requestParameters: ApiUsersGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['role'] != null) {
+            queryParameters['role'] = requestParameters['role'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("Bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/api/Users`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -75,12 +219,16 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Sample request:        GET /api/Users?role=admin
+     * Retrieves all users or filters users by role. Accessible only by admins.
      */
-    async apiUsersAdminOnlyGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.apiUsersAdminOnlyGetRaw(initOverrides);
+    async apiUsersGet(requestParameters: ApiUsersGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.apiUsersGetRaw(requestParameters, initOverrides);
     }
 
     /**
+     * Sample request:        POST /api/Users/login      {          \"email\": \"user@example.com\",          \"password\": \"StrongPassword123\"      }
+     * Authenticates a user and returns a JWT token.
      */
     async apiUsersLoginPostRaw(requestParameters: ApiUsersLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
@@ -109,12 +257,16 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Sample request:        POST /api/Users/login      {          \"email\": \"user@example.com\",          \"password\": \"StrongPassword123\"      }
+     * Authenticates a user and returns a JWT token.
      */
     async apiUsersLoginPost(requestParameters: ApiUsersLoginPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.apiUsersLoginPostRaw(requestParameters, initOverrides);
     }
 
     /**
+     * Sample request:        POST /api/Users/register      {          \"email\": \"user@example.com\",          \"password\": \"StrongPassword123\"      }
+     * Registers a new user.
      */
     async apiUsersRegisterPostRaw(requestParameters: ApiUsersRegisterPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
@@ -143,12 +295,16 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Sample request:        POST /api/Users/register      {          \"email\": \"user@example.com\",          \"password\": \"StrongPassword123\"      }
+     * Registers a new user.
      */
     async apiUsersRegisterPost(requestParameters: ApiUsersRegisterPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.apiUsersRegisterPostRaw(requestParameters, initOverrides);
     }
 
     /**
+     * Sample request:                    PUT /api/Users/update      {          \"userId\": \"63f1e4d5e70b2f00123abcde\",          \"newEmail\": \"newemail@example.com\",          \"newPassword\": \"NewPassword123!\"      }                If no `newEmail` or `newPassword` is provided, the respective fields will remain unchanged.
+     * Updates the authenticated user\'s password or email.
      */
     async apiUsersUpdatePutRaw(requestParameters: ApiUsersUpdatePutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
@@ -177,12 +333,16 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Sample request:                    PUT /api/Users/update      {          \"userId\": \"63f1e4d5e70b2f00123abcde\",          \"newEmail\": \"newemail@example.com\",          \"newPassword\": \"NewPassword123!\"      }                If no `newEmail` or `newPassword` is provided, the respective fields will remain unchanged.
+     * Updates the authenticated user\'s password or email.
      */
     async apiUsersUpdatePut(requestParameters: ApiUsersUpdatePutRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.apiUsersUpdatePutRaw(requestParameters, initOverrides);
     }
 
     /**
+     * This endpoint fetches information about the currently authenticated user based on their JWT token.    Sample response:        {          \"Message\": \"User Info\",          \"UserId\": \"63f1e4d5e70b2f00123abcde\",          \"Email\": \"user@example.com\",          \"Role\": \"admin\"      }
+     * Retrieves the authenticated user\'s information.
      */
     async apiUsersUserInfoGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
@@ -208,12 +368,16 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * This endpoint fetches information about the currently authenticated user based on their JWT token.    Sample response:        {          \"Message\": \"User Info\",          \"UserId\": \"63f1e4d5e70b2f00123abcde\",          \"Email\": \"user@example.com\",          \"Role\": \"admin\"      }
+     * Retrieves the authenticated user\'s information.
      */
     async apiUsersUserInfoGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.apiUsersUserInfoGetRaw(initOverrides);
     }
 
     /**
+     * Sample request:        POST /api/Users/validate-token      \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"
+     * Validates the provided JWT token.
      */
     async apiUsersValidateTokenPostRaw(requestParameters: ApiUsersValidateTokenPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
@@ -242,6 +406,8 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Sample request:        POST /api/Users/validate-token      \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"
+     * Validates the provided JWT token.
      */
     async apiUsersValidateTokenPost(requestParameters: ApiUsersValidateTokenPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.apiUsersValidateTokenPostRaw(requestParameters, initOverrides);
