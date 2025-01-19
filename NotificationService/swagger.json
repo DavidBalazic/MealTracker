@@ -1,0 +1,57 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Notification Service",
+    "description": "A microservice for sending notifications to users within the FOOD TRACKER project.",
+    "version": "1.0.0"
+  },
+  "host": "<domain pending>",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/send": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Create and send a notification",
+        "description": "Create and send a notification",
+        "parameters": [
+          {
+            "name": "userEmail",
+            "in": "body",
+            "description": "User email",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "user.email@email.com"
+            }
+          },
+          {
+            "name": "content",
+            "in": "body",
+            "description": "Notification content",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Notification email content, lorem ipsum etc..."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification sent successfully"
+          },
+          "400": {
+            "description": "Required: content, userEmail"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    }
+  }
+}
