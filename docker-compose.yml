@@ -1,0 +1,79 @@
+version: "3.9"
+services:
+  userservice:
+    build:
+      context: ./UserService
+      dockerfile: Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=${MONGODB_CONNECTION_STRING}
+      - AllowedOrigins__Frontend=http://frontend:3000
+    networks:
+      - app_network
+
+  foodservice:
+    build:
+      context: ./FoodService
+      dockerfile: Dockerfile
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=${MONGODB_CONNECTION_STRING}
+      - AllowedOrigins__Frontend=http://frontend:3000
+    networks:
+      - app_network
+
+  recipeservice:
+    build:
+      context: ./RecipeService
+      dockerfile: Dockerfile
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=${MONGODB_CONNECTION_STRING}
+      - FoodService__BaseAddress=http://foodservice:80
+      - NutritionService__BaseAddress=https://nutrtion-service-latest.onrender.com
+      - AllowedOrigins__Frontend=http://frontend:3000
+    networks:
+      - app_network
+
+  mealtrackerservice:
+    build:
+      context: ./MealTrackerService
+      dockerfile: Dockerfile
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoSettings__ConnectionString=${MONGODB_CONNECTION_STRING}
+      - MongoSettings__DatabaseName=MealTrackerDatabase
+      - ServiceUrls__FoodService=http://foodservice:8080
+      - ServiceUrls__UserService=http://userservice:8080
+      - AllowedOrigins__Frontend=http://frontend:3000
+    networks:
+      - app_network
+
+  frontend:
+    build:
+      context: ./FoodTrackerClient/food_tracker
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_CONNECTION_STRING=${MONGODB_CONNECTION_STRING}
+      - REACT_APP_MEAL_TRACKER_SERVICE_URL=http://mealtrackerservice:8080
+      - REACT_APP_FOOD_SERVICE_URL=http://foodservice:8080
+      - REACT_APP_RECIPE_SERVICE_URL=http://recipeservice:8080
+      - REACT_APP_USER_SERVICE_URL=http://userservice:8080
+      - REACT_APP_URL=http://localhost:3000
+      - MONGO_DATABASE_NAME=soa_db
+    networks:
+      - app_network
+    
+networks:
+  app_network:
+    name: my_network
