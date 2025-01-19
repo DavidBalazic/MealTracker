@@ -80,12 +80,13 @@ internal class Program
             var mongoDbSettings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
 
             // Ensure connection string is valid
-            if (string.IsNullOrEmpty(mongoDbSettings.ConnectionString))
+            var mongoURI = Environment.GetEnvironmentVariable("MONGO_URL") ?? mongoDbSettings.ConnectionString;
+            if (string.IsNullOrEmpty(mongoURI))
             {
-                throw new ArgumentNullException(nameof(mongoDbSettings.ConnectionString), "MongoDB connection string is not configured properly in appsettings.json.");
+                throw new ArgumentNullException(nameof(mongoURI), "MongoDB connection string is not configured properly in appsettings.json.");
             }
-
-            return new MongoClient(mongoDbSettings.ConnectionString);
+            Console.WriteLine($"MongoDB Connection String: {mongoURI}");
+            return new MongoClient(mongoURI);
         });
 
         // Register UserService with DI

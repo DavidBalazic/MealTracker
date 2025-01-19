@@ -1,0 +1,7 @@
+services:
+  mealsuggestion-service:
+    env_file:
+      - global.env
+  userservice:
+    env_file:
+      - global.env

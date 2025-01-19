@@ -1,0 +1,4 @@
+include:
+# Some env set in docker-compose.override.yaml
+  - ./MealSuggestionService/docker-compose.yaml 
+  - ./UserService/docker-compose.yml
