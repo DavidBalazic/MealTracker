@@ -1,8 +1,7 @@
-version: '3.4'
-
 services:
-  usercontroller:
-    image: ${DOCKER_REGISTRY-}usercontroller
+  userservice:
+    container_name: userservice
     build:
       context: .
-      dockerfile: Presentation/UserController/Dockerfile
+    ports:
+      - "8080:8080"
