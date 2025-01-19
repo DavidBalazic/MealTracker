@@ -1,5 +1,6 @@
 const axios = require("axios");
 const { recompileSchema } = require("../models/MealSuggestion");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 // TODO implement, currently placeholder
@@ -85,20 +86,55 @@ const fetchUserCalorieGoal = async (userId, jwtToken) => {
 };
 
 const validateToken = async (jwtToken) => {
-  {
+  try {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
     const response = await axios.post(
-      "userServiceUrl/api/Users/validate-token",
+      process.env.USER_SERVICE_URL + "/api/Users/validate-token",
       {
-        token: jwtToken,
+        headers: {
+          Authorization: jwtToken,
+        },
+        body: jwtToken,
       }
     );
-    return response.data.IsValid;
+    return { isValid: response.data.IsValid };
+  } catch (err) {
+    console.error("Error validating token via User Service. Trying local validation");
+  }
+  try {
+    secretKeyString =
+      process.env.JWT_SECRET || "ThisIsAReallyStrongAndLongRandomKey!@#123456";
+    const decoded = jwt.verify(jwtToken, secretKeyString, {
+      algorithms: ["HS256"],
+      issuer: "https://localhost:7073",
+      ignoreExpiration: false,
+      clockTolerance: 0,
+    });
+    return {isValid:!!decoded};
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return { isValid: false, error: "expired" };
+    }
+    console.error("Error validating JWT token:", error);
   }
 };
+
+const postErr = async (code, message) => {
+  try {
+    await axios.post(`http://${process.env.ERROR_SERVICE_URL}/new`, {
+      code: code,
+      message: message,
+    });
+  } catch (err) {
+    console.error("Error posting error message:", err);
+  }
+};
+
 
 module.exports = {
   fetchFoodData,
   fetchRecipeData,
   validateToken,
   fetchUserCalorieGoal,
+  postErr,
 };

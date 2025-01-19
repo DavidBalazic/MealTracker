@@ -3,7 +3,6 @@ const MealSuggestion = require("../models/MealSuggestion");
 const {
   fetchFoodData,
   fetchRecipeData,
-  validateToken,
   fetchUserCalorieGoal,
 } = require("../utils/dataFetcher");
 const axios = require("axios");
@@ -21,6 +20,7 @@ router.get("/user/:userId", jwtValidationMiddleware, async (req, res) => {
         #swagger.responses[200] = {
             description: 'Meal suggestions retrieved successfully', 
             schema: [{
+                _id: "gfdskjgfdskjafdsjkfdsgf",
                 userId: "60f1b3b3b3b3b3b3b3b3b3b3",
                 recipeId: "ijfds8j5dlklkfadlkafdslk5",
                 recipeName: "Chicken with rice and goodies",
@@ -268,6 +268,20 @@ router.delete("/user/:userId", jwtValidationMiddleware, async (req, res) => {
     res
       .status(200)
       .json({ message: "All meal suggestions deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST: error: create a fake 500 error
+router.post("/error", async (req, res) => {
+  /*#swagger.tags = ['Errors']
+    #swagger.description = 'Create a fake 500 error'
+    #swagger.summary = 'Create a fake 500 error'
+    #swagger.responses[500] = {description: 'Error created successfully'}
+    #swagger.responses[500] = {description: 'Server error'}*/
+  try {
+    throw new Error("Fake 500 error");
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

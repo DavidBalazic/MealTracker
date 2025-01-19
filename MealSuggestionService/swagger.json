@@ -37,6 +37,11 @@
             }
           },
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "liked",
             "description": "Filter by liked status",
             "in": "query",
@@ -52,6 +57,10 @@
               "items": {
                 "type": "object",
                 "properties": {
+                  "_id": {
+                    "type": "string",
+                    "example": "gfdskjgfdskjafdsjkfdsgf"
+                  },
                   "userId": {
                     "type": "string",
                     "example": "60f1b3b3b3b3b3b3b3b3b3b3"
@@ -117,6 +126,11 @@
               "type": "object",
               "properties": {}
             }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -156,6 +170,11 @@
               "type": "object",
               "properties": {}
             }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -232,6 +251,11 @@
               "type": "object",
               "properties": {}
             }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -267,6 +291,11 @@
               "type": "object",
               "properties": {}
             }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
           },
           {
             "name": "userId",
@@ -350,6 +379,11 @@
             }
           },
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "userId",
             "description": "User ID",
             "in": "body",
@@ -430,6 +464,11 @@
               "type": "object",
               "properties": {}
             }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -472,6 +511,11 @@
               "type": "object",
               "properties": {}
             }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -486,6 +530,20 @@
           },
           "500": {
             "description": "Failed to unlike meal suggestion"
+          }
+        }
+      }
+    },
+    "/api/error": {
+      "post": {
+        "tags": [
+          "Errors"
+        ],
+        "summary": "Create a fake 500 error",
+        "description": "Create a fake 500 error",
+        "responses": {
+          "500": {
+            "description": "Server error"
           }
         }
       }
