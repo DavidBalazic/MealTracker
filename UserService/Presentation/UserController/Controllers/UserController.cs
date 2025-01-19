@@ -17,9 +17,27 @@ namespace UserController.Controllers
             _userService = userService;
         }
 
-        // Public endpoint: Register a new user
+        /// <summary>
+        /// Registers a new user.
+        /// </summary>
+        /// <param name="request">The registration details, including email and password.</param>
+        /// <returns>A response containing the new user's unique ID.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST /api/Users/register
+        ///     {
+        ///         "email": "user@example.com",
+        ///         "password": "StrongPassword123"
+        ///     }
+        /// 
+        /// </remarks>
+        /// <response code="200">Successfully registered a new user, returning the UserId.</response>
+        /// <response code="400">Invalid request, including missing or malformed data.</response>
         [HttpPost("register")]
-        [AllowAnonymous] // No authentication required
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register([FromBody] RegisterDTO request)
         {
             try
@@ -33,9 +51,29 @@ namespace UserController.Controllers
             }
         }
 
-        // Public endpoint: Login
+        /// <summary>
+        /// Authenticates a user and returns a JWT token.
+        /// </summary>
+        /// <param name="request">The login details, including email and password.</param>
+        /// <returns>A response containing the JWT token if authentication is successful.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST /api/Users/login
+        ///     {
+        ///         "email": "user@example.com",
+        ///         "password": "StrongPassword123"
+        ///     }
+        /// 
+        /// </remarks>
+        /// <response code="200">Successfully authenticated the user and generated a token.</response>
+        /// <response code="400">Invalid request, including missing email or password.</response>
+        /// <response code="401">Authentication failed due to invalid credentials.</response>
         [HttpPost("login")]
-        [AllowAnonymous] // No authentication required
+        [AllowAnonymous] 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromBody] LoginDTO request)
         {
             try
@@ -64,9 +102,32 @@ namespace UserController.Controllers
             }
         }
 
-        // Protected endpoint: Update user details (requires authentication)
+
+        /// <summary>
+        /// Updates the authenticated user's password or email.
+        /// </summary>
+        /// <param name="request">The user update details, including a new password or email.</param>
+        /// <returns>A response indicating whether the update was successful.</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     PUT /api/Users/update
+        ///     {
+        ///         "userId": "63f1e4d5e70b2f00123abcde",
+        ///         "newEmail": "newemail@example.com",
+        ///         "newPassword": "NewPassword123!"
+        ///     }
+        ///
+        /// If no `newEmail` or `newPassword` is provided, the respective fields will remain unchanged.
+        /// </remarks>
+        /// <response code="200">Successfully updated the user's password or email.</response>
+        /// <response code="400">Invalid input, such as missing required fields or invalid values.</response>
+        /// <response code="401">Unauthorized access, such as when the user is not authenticated.</response>
         [HttpPut("update")]
-        [Authorize] // Authentication required
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Update([FromBody] UpdateDTO request)
         {
             try
@@ -86,17 +147,53 @@ namespace UserController.Controllers
             }
         }
 
-        // Protected endpoint: Validate token (requires authentication)
+        /// <summary>
+        /// Validates the provided JWT token.
+        /// </summary>
+        /// <param name="token">The JWT token to validate.</param>
+        /// <returns>A response indicating whether the token is valid.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST /api/Users/validate-token
+        ///     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        /// 
+        /// </remarks>
+        /// <response code="200">The token is successfully validated.</response>
+        /// <response code="401">Unauthorized access when the request lacks valid credentials.</response>
         [HttpPost("validate-token")]
-        [Authorize] // Authentication required
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult ValidateToken([FromBody] string token)
         {
             var isValid = _userService.ValidateJwtToken(token);
             return Ok(new { IsValid = isValid });
         }
 
+        /// <summary>
+        /// Retrieves the authenticated user's information.
+        /// </summary>
+        /// <returns>A response containing the user's ID, email, and role.</returns>
+        /// <remarks>
+        /// This endpoint fetches information about the currently authenticated user based on their JWT token.
+        /// 
+        /// Sample response:
+        /// 
+        ///     {
+        ///         "Message": "User Info",
+        ///         "UserId": "63f1e4d5e70b2f00123abcde",
+        ///         "Email": "user@example.com",
+        ///         "Role": "admin"
+        ///     }
+        /// 
+        /// </remarks>
+        /// <response code="200">Successfully retrieved the user's information.</response>
+        /// <response code="401">Unauthorized access when the request lacks valid credentials.</response>
         [HttpGet("user-info")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult UserInfo()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
@@ -112,8 +209,26 @@ namespace UserController.Controllers
             });
         }
 
+        /// <summary>
+        /// Deletes the currently authenticated user's account.
+        /// </summary>
+        /// <returns>A confirmation message indicating the account was deleted successfully.</returns>
+        /// <remarks>
+        /// This endpoint allows the authenticated user to delete their account permanently.
+        /// 
+        /// Sample request:
+        /// 
+        ///     DELETE /api/Users/delete-account
+        /// 
+        /// </remarks>
+        /// <response code="200">Account deleted successfully.</response>
+        /// <response code="401">Unauthorized if the user is not authenticated or the token is invalid.</response>
+        /// <response code="400">Bad request if an error occurs during the deletion process.</response>
         [HttpDelete("delete-account")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeleteAccount()
         {
             try
@@ -133,8 +248,27 @@ namespace UserController.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a user by their ID. Accessible only by admins.
+        /// </summary>
+        /// <param name="id">The ID of the user to delete.</param>
+        /// <returns>A confirmation message indicating the user was deleted successfully.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     DELETE /api/Users/admin/delete-user/{id}
+        /// 
+        /// </remarks>
+        /// <response code="200">User deleted successfully.</response>
+        /// <response code="400">Bad request if the user ID is invalid or an error occurs.</response>
+        /// <response code="401">Unauthorized if the admin is not authenticated.</response>
+        /// <response code="403">Forbidden if the user does not have admin privileges.</response>
         [HttpDelete("admin/delete-user/{id}")]
-        [Authorize(Roles = "admin")] 
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteUser(string id)
         {
             try
@@ -148,8 +282,32 @@ namespace UserController.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates the role of a user by their ID. Accessible only by admins.
+        /// </summary>
+        /// <param name="id">The ID of the user whose role is being updated.</param>
+        /// <param name="newRole">The new role to assign to the user.</param>
+        /// <returns>A confirmation message indicating the role was updated successfully.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     PUT /api/Users/admin/update-role/{id}
+        /// 
+        /// Request body:
+        /// 
+        ///     "admin"
+        /// 
+        /// </remarks>
+        /// <response code="200">User role updated successfully.</response>
+        /// <response code="400">Bad request if the user ID or role is invalid.</response>
+        /// <response code="401">Unauthorized if the admin is not authenticated.</response>
+        /// <response code="403">Forbidden if the user does not have admin privileges.</response>
         [HttpPut("admin/update-role/{id}")]
         [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> UpdateUserRole(string id, [FromBody] string newRole)
         {
             try
@@ -163,8 +321,27 @@ namespace UserController.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves all users or filters users by role. Accessible only by admins.
+        /// </summary>
+        /// <param name="role">Optional role to filter users. If not provided, retrieves all users.</param>
+        /// <returns>A list of users matching the specified role or all users if no role is provided.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     GET /api/Users?role=admin
+        /// 
+        /// </remarks>
+        /// <response code="200">Successfully retrieved the list of users.</response>
+        /// <response code="400">Bad request if an error occurs during data retrieval.</response>
+        /// <response code="401">Unauthorized if the admin is not authenticated.</response>
+        /// <response code="403">Forbidden if the user does not have admin privileges.</response>
         [HttpGet]
         [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetAllUsers([FromQuery] string role)
         {
             try

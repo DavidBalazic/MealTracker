@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Reflection;
 
 internal class Program
 {
@@ -65,6 +66,9 @@ internal class Program
                     new string[] {}
                 }
             });
+
+            var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         });
 
         // Bind MongoDB settings from configuration
@@ -109,7 +113,10 @@ internal class Program
 
         // Enable Swagger for development and testing
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "User API v1");
+        });
 
         // Use CORS middleware
         app.UseCors("AllowSpecificOrigins");
