@@ -1,5 +1,4 @@
 const express = require("express");
-const sendEmail = require("../utils/emailSender");
 const router = express.Router();
 const errors = require("../models/errors");
 
@@ -8,6 +7,9 @@ router.get("/", async (req, res) => {
   /*#swagger.tags = ['Errors']
     #swagger.description = 'Get all errors' 
     #swagger.summary = 'Get all errors' 
+    #swagger.schema = {
+    [{message: "Error message1", code: 500}, {message: "Error message2", code: 500}]}
+    }
     #swagger.responses[200] = {
             description: 'List of errors',
     }

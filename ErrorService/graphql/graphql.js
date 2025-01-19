@@ -1,5 +1,5 @@
 const { buildSchema } = require("graphql");
-const errors = require("../models/Error");
+const errors = require("../models/errors");
 
 const schema = buildSchema(`
   type Error {
