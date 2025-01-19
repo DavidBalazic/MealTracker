@@ -1,0 +1,23 @@
+{
+  "name": "notificationservice",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "swagger": "node ./utils/swagger.js"
+  },
+  "author": "Oskar Dolenc",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.4",
+    "nodemailer": "^6.9.16",
+    "nodemon": "^3.1.9",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "swagger-autogen": "^2.23.7"
+  }
+}

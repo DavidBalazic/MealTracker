@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const notificationRoutes = require("./routes/notifications");
+const errorRoute = require("./routes/errorRoute");
 const swaggerUi = require("swagger-ui-express");
 const swaggerFile = require("./swagger.json");
 const { graphqlHTTP } = require("express-graphql");
@@ -14,8 +14,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
-app.use("/", notificationRoutes);
-
+app.use("/", errorRoute);
 app.use(
   "/graphql",
   graphqlHTTP({
@@ -25,8 +24,5 @@ app.use(
   })
 );
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`GraphQL endpoint available at http://localhost:${PORT}/graphql`);
-});
+const PORT = process.env.PORT || 3004;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

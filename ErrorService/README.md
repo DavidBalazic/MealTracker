@@ -1,6 +1,7 @@
-# Notification Service
+# ErrorService
 
 This service is part of the cloud deployment of the project `Food Tracker`.
+It saves erorrs of the current session for the MealSuggestionsService.
 
 ## Run
 
@@ -10,5 +11,5 @@ You can run the service manually using docker with the Dockerfile or `npm instal
 
 Environment variables and their default values:
 ```
-PORT=3001
+PORT=3004
 ```
