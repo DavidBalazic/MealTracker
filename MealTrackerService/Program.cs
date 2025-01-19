@@ -4,6 +4,10 @@ using MealTrackerService.Models;
 using MongoDB.Driver;
 using dotenv.net;
 using FoodServiceClient;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.OpenApi.Models;
 
 namespace MealTrackerService
 {
@@ -30,6 +34,33 @@ namespace MealTrackerService
                     {
                         Name = "Your Name",
                         Email = "your.email@example.com"
+                    }
+                });
+
+                // Add Bearer token authentication for Swagger
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter your valid JWT token below."
+                });
+
+                // Require Bearer token for secured endpoints
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
                     }
                 });
 
@@ -68,7 +99,7 @@ namespace MealTrackerService
                 var baseUrl = Environment.GetEnvironmentVariable("FOOD_SERVICE_URL");
                 return new FoodServiceClient.FoodServiceClient(baseUrl!, httpClient);
             });
-            
+
             // Configure CORS
             var reactAppUrl = Environment.GetEnvironmentVariable("REACT_APP_URL");
 
@@ -82,25 +113,39 @@ namespace MealTrackerService
                 });
             });
 
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+           .AddJwtBearer(options =>
+           {
+               options.TokenValidationParameters = new TokenValidationParameters
+               {
+                   ValidateIssuerSigningKey = true,
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JwtSettings:Secret"]!)),
+                   ValidateIssuer = true,
+                   ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                   ValidateAudience = false, // Adjust if needed
+                   ClockSkew = TimeSpan.Zero
+               };
+           });
+
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(options =>
-                {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Meal Tracker API v1");
-                    options.RoutePrefix = string.Empty; // Swagger served at root URL
-                });
-            }
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Meal Tracker API v1");
+                options.RoutePrefix = string.Empty; // Swagger served at root URL
+            });
+
 
             app.UseHttpsRedirection();
 
             // Enable CORS
             app.UseCors("AllowReactApp");
 
+            app.UseAuthentication();
             app.UseAuthorization();
+
             app.MapControllers(); // Enable controller-based routing
 
             app.Run();
