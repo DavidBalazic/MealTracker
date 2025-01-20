@@ -5,6 +5,8 @@ services:
       - mealsuggestionservice-network
     env_file:
       - global.env
+    ports:
+      - "5005:3002"
 
 networks:
   mealsuggestionservice-network:

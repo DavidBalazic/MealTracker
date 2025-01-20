@@ -1,3 +1,10 @@
+# ports:
+# frontend 3000 or 80
+# userservice 5001
+# foodservice 5002
+# recipeservice 5003
+# mealtrackerservice 5004
+# mealsuggestion-service 5005
 services:
   userservice:
     build:
@@ -62,12 +69,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:80"
+      - "80:80"
     environment:
-      - REACT_APP_MEAL_TRACKER_SERVICE_URL=http://mealtrackerservice:8080
-      - REACT_APP_FOOD_SERVICE_URL=http://foodservice:8080
-      - REACT_APP_RECIPE_SERVICE_URL=http://recipeservice:8080
-      - REACT_APP_USER_SERVICE_URL=http://userservice:8080
-      - REACT_APP_URL=http://localhost:3000
       - MONGO_DATABASE_NAME=soa_db
     env_file: # Move as many env vars as possible to global.env (those that might get changed)
       - global.env

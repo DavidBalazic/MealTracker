@@ -14,9 +14,11 @@ async function jwtValidationMiddleware(req, res, next) {
     #swagger.responses[401] = {description: 'Invalid jwt token'}
 
 */
+  var jwtToken;
   const insecureAccess = req.app.get("insecureAccess");
   if (insecureAccess == "false") {
-    const jwtToken = req.headers.authorization.split(" ")[1]; // Authorization: Bearer <token>
+    if (req.headers.authorization)
+      jwtToken = req.headers.authorization.split(" ")[1]; // Authorization: Bearer <token>
     if (!jwtToken) return res.status(401).json({ error: "Missing jwt token" });
     const validation = await validateToken(jwtToken);
     if (!validation)

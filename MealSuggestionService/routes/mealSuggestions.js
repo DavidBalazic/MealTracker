@@ -4,6 +4,7 @@ const {
   fetchFoodData,
   fetchRecipeData,
   fetchUserCalorieGoal,
+  postMail,
 } = require("../utils/dataFetcher");
 const axios = require("axios");
 const { jwtValidationMiddleware } = require("../utils/middlewares");
@@ -103,22 +104,27 @@ router.post("/", jwtValidationMiddleware, async (req, res) => {
         #swagger.responses[401] = {description: 'Missing jwt token'}
         #swagger.responses[401] = {description: 'Invalid jwt token'}*/
   try {
-    const { userId, jwtToken } = req.body;
+    const { userId } = req.body;
+    if (!req.headers.authorization)
+      return res.status(401).json({ error: "Missing jwt token" });
+    const jwtToken = req.headers.authorization.split(" ")[1];
+    // return res.status(401).json({ "jwtToken": jwtToken });
+    if (!jwtToken) return res.status(401).json({ error: "Missing jwt token" });
     if (!userId)
       return res.status(400).json({ error: "Missing required fields: userId" });
     const foods = await fetchFoodData(jwtToken);
     const recipes = await fetchRecipeData(jwtToken);
-    const calorieGoal = await fetchUserCalorieGoal(userId);
+    const calorieGoal = await fetchUserCalorieGoal(jwtToken);
     // In recipes delete recipe if recipe {ingridients [{id1}]} is not in foods [{id1}]
     const filteredRecipes = recipes.filter((recipe) =>
-      recipe.ingredients.every((ingredient) =>
-        foods.some((food) => food.id === ingredient.id)
+      recipe.Ingredients.every((ingredient) =>
+        foods.some((food) => food.Id === ingredient.Id)
       )
     );
     // In filteredRecipes choose the one with the closest calorie count to calorieGoal
     const suggestion = filteredRecipes.reduce((prev, curr) =>
-      Math.abs(curr.totalNutrition.calories - calorieGoal) <
-      Math.abs(prev.totalNutrition.calories - calorieGoal)
+      Math.abs(curr.TotalNutrition.Calories - calorieGoal) <
+      Math.abs(prev.TotalNutrition.Calories - calorieGoal)
         ? curr
         : prev
     );
@@ -130,6 +136,14 @@ router.post("/", jwtValidationMiddleware, async (req, res) => {
       recipeTags: suggestion.tags.join(", "),
     });
     await mealSuggestion.save();
+    postMail(
+      "b.oskar.dolenc@gmail.com",
+      "<h1>Meal Suggestion</h1><p>Here is your meal suggestion:</p><ul><li>Recipe: " +
+        suggestion.name +
+        "</li><li>Tags: " +
+        suggestion.tags.join(", ") +
+        "</li></ul>"
+    );
     res.status(201).json(mealSuggestion);
   } catch (err) {
     res.status(500).json({ error: err.message });
