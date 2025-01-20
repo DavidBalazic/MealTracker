@@ -15,8 +15,13 @@ const Admin: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [roleUpdateUserId, setRoleUpdateUserId] = useState<string>("");
   const [newRole, setNewRole] = useState<string>("");
+  const [errorLogs, setErrorLogs] = useState<string[]>([]); // Error logs for the terminal
 
   const getAuthToken = () => sessionStorage.getItem("authToken") || "";
+
+  const logError = (message: string) => {
+    setErrorLogs((prevLogs) => [...prevLogs, message]); // Add new error to logs
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -25,6 +30,7 @@ const Admin: React.FC = () => {
 
     if (!jwtToken) {
       setError("User is not authenticated.");
+      logError("User is not authenticated.");
       setLoading(false);
       return;
     }
@@ -33,8 +39,10 @@ const Admin: React.FC = () => {
       const users = await fetchUsersByRole("user", jwtToken);
       setUsers(users);
     } catch (err) {
-      setError("Failed to fetch users.");
-      console.error("Error fetching users:", err);
+      const errorMessage = "Failed to fetch users.";
+      setError(errorMessage);
+      logError(errorMessage);
+      console.error(errorMessage, err);
     } finally {
       setLoading(false);
     }
@@ -42,7 +50,9 @@ const Admin: React.FC = () => {
 
   const handleUpdateUserRole = async () => {
     if (!roleUpdateUserId || !newRole) {
-      setError("Please provide both user ID and new role.");
+      const errorMessage = "Please provide both user ID and new role.";
+      setError(errorMessage);
+      logError(errorMessage);
       return;
     }
     setLoading(true);
@@ -54,8 +64,10 @@ const Admin: React.FC = () => {
       alert("User role updated successfully.");
       fetchUsers(); // Refresh the user list after updating the role
     } catch (err) {
-      setError("Failed to update user role.");
-      console.error("Error updating user role:", err);
+      const errorMessage = "Failed to update user role.";
+      setError(errorMessage);
+      logError(errorMessage);
+      console.error(errorMessage, err);
     } finally {
       setLoading(false);
       setRoleUpdateUserId("");
@@ -76,8 +88,10 @@ const Admin: React.FC = () => {
       alert("User deleted successfully.");
       fetchUsers(); // Refresh the user list after deleting a user
     } catch (err) {
-      setError("Failed to delete user.");
-      console.error("Error deleting user:", err);
+      const errorMessage = "Failed to delete user.";
+      setError(errorMessage);
+      logError(errorMessage);
+      console.error(errorMessage, err);
     } finally {
       setLoading(false);
     }
@@ -147,6 +161,27 @@ const Admin: React.FC = () => {
             ))}
           </div>
         )}
+        {/* Terminal for Error Logs */}
+        <div className="mt-8">
+          <Card className="bg-black text-white p-6 relative">
+            <h2 className="text-xl font-bold mb-4">Error Logs</h2>
+            <div className="overflow-y-auto max-h-48">
+              {errorLogs.length === 0 ? (
+                <p className="text-gray-400">.</p>
+              ) : (
+                errorLogs.map((log, index) => (
+                  <p key={index} className="text-sm">
+                    {log}
+                  </p>
+                ))
+              )}
+            </div>
+            {/* Blinking Cursor */}
+            <div className="absolute bottom-4 left-6 text-white">
+              <span className="bg-white text-black px-1 animate-pulse">_</span>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
