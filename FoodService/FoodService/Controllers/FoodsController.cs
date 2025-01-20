@@ -136,7 +136,6 @@ namespace FoodService.Controllers
         /// <response code="401">Uporabnik ni pooblaščen za dostop.</response>
         /// <response code="403">Uporabnik nima zadostnih dovoljenj za dostop do tega vira.</response>
         /// <response code="400">Neveljavni podatki.</response>
-        [Authorize(Roles = "admin")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
