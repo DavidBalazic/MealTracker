@@ -30,12 +30,12 @@ The application is composed of independent services that communicate over well-d
 | `MealTrackerService`           | C#         | Core service for logging and retrieving meals                          |
 | `FoodService`                  | C#         | Provides structured food item data and metadata                         |
 | `RecipeService`                | C#         | Manages recipes and user-submitted meals                                |
-| `NotificationService`          | JavaScript | Sends reminders and alerts via FaaS                                     |
-| `MealSuggestionService`        | JavaScript | Provides intelligent meal suggestions using FaaS                        |
+| `NotificationService`          | JavaScript | Sends reminders and alerts                                              |
+| `MealSuggestionService`        | JavaScript | Provides intelligent meal suggestions                                   |
 | `ErrorService`                 | JavaScript | Centralized error logging and monitoring                                |
 | `StatisticsService`            | JavaScript | Computes user statistics, trends, and visual summaries                  |
 | `NutritionService`             | Python     | Analyzes nutritional content of meals and food items                    |
-| `RecipeRecommendationService` | Python     | Provides AI-based recipe recommendations based on user history         |
+| `RecipeRecommendationService` | Python     | Provides recipe recommendations based on user history                    |
 
 
 ---
