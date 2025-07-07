@@ -1,10 +1,3 @@
-# ports:
-# frontend 3000 or 80
-# userservice 5001
-# foodservice 5002
-# recipeservice 5003
-# mealtrackerservice 5004
-# mealsuggestion-service 5005
 services:
   userservice:
     build:
@@ -15,7 +8,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - AllowedOrigins__Frontend=http://frontend:3000
-    env_file: # Move as many env vars as possible to global.env (those that might get changed)
+    env_file:
       - global.env
     networks:
       - foodtracker-network
@@ -29,7 +22,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - AllowedOrigins__Frontend=http://frontend:3000
-    env_file: # Move as many env vars as possible to global.env (those that might get changed)
+    env_file:
       - global.env
     networks:
       - foodtracker-network
@@ -43,7 +36,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - AllowedOrigins__Frontend=http://frontend:3000
-    env_file: # Move as many env vars as possible to global.env (those that might get changed)
+    env_file:
       - global.env
     networks:
       - foodtracker-network
@@ -58,7 +51,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - MongoSettings__DatabaseName=MealTrackerDatabase
       - AllowedOrigins__Frontend=http://frontend:3000
-    env_file: # Move as many env vars as possible to global.env (those that might get changed)
+    env_file:
       - global.env
     networks:
       - foodtracker-network
@@ -72,7 +65,7 @@ services:
       - "80:80"
     environment:
       - MONGO_DATABASE_NAME=soa_db
-    env_file: # Move as many env vars as possible to global.env (those that might get changed)
+    env_file: 
       - global.env
     networks:
       - foodtracker-network
@@ -82,5 +75,4 @@ networks:
     name: foodtracker-network
 
 include:
-  # Some env set in docker-compose.override.yaml
   - ./MealSuggestionService/docker-compose.yaml
